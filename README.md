@@ -2,6 +2,15 @@
 
 Schema Studio is a browser-based editor for database diagrams. Paste DBML to see your tables and how they connect.
 
+[Try the live demo](https://erd-editor-phi.vercel.app)
+
+## Screenshots
+
+<p>
+  <img src="docs/screenshots/light-mode.png" alt="Schema Studio in light mode with the DBML editor and a five-table diagram" width="48%">&nbsp;&nbsp;
+  <img src="docs/screenshots/dark-mode.png" alt="Schema Studio in dark mode with the DBML editor and a five-table diagram" width="48%">
+</p>
+
 ## Features
 
 - Edit DBML with a live preview, syntax highlighting, and error messages.
