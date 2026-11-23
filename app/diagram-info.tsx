@@ -1,8 +1,11 @@
+import { Group } from "./ui/group";
+
 export default function DiagramInfo() {
   return (
-    <div
+    <Group
       id="diagram-info"
-      className="floating-surface pointer-events-none absolute top-[var(--workspace-inset)] right-[var(--workspace-inset)] flex h-[var(--floating-control-height)] items-center gap-3 px-3 py-1.5"
+      variant="floating"
+      className="pointer-events-none absolute top-[var(--workspace-inset)] right-[var(--workspace-inset)] h-[var(--floating-control-height)] items-center gap-3 px-3 py-1.5"
     >
       <p id="diagram-summary">No tables</p>
       <div
@@ -16,6 +19,6 @@ export default function DiagramInfo() {
           <b className="fk">FK</b> Foreign key
         </span>
       </div>
-    </div>
+    </Group>
   );
 }

@@ -7,13 +7,14 @@ export default function ZoomControls() {
   return (
     <Group
       id="diagram-navigation"
-      className="navigation floating-surface absolute right-[var(--workspace-inset)] bottom-[var(--workspace-inset)] h-[var(--floating-control-height)] max-[761px]:bottom-[calc(var(--editor-height)+var(--workspace-inset)+12px)] items-stretch"
+      variant="floating"
+      className="navigation absolute right-[var(--workspace-inset)] bottom-[var(--workspace-inset)] h-[var(--floating-control-height)] max-[761px]:bottom-[calc(var(--editor-height)+var(--workspace-inset)+12px)] items-stretch"
       aria-label="Diagram view controls"
     >
       <Button
         variant="plain"
         id="zoom-out"
-        className="zoom-control rounded-s-ui-edge enabled:hover:bg-ui-hover"
+        className="zoom-control rounded-s-md enabled:hover:bg-ui-hover"
         aria-label="Zoom out"
         title="Zoom out"
       >
@@ -46,7 +47,7 @@ export default function ZoomControls() {
       <Button
         variant="plain"
         id="fit"
-        className="zoom-control rounded-e-ui-edge border-l border-ui-line enabled:hover:bg-ui-hover"
+        className="zoom-control rounded-e-md border-l border-ui-line enabled:hover:bg-ui-hover"
         aria-label="Fit diagram"
         title="Fit diagram"
       >

@@ -17,15 +17,16 @@ export default function WorkspaceMenu() {
         trigger={{
           id: "toggle-menu",
           variant: "plain",
+          radius: "lg",
           className:
             "menu-trigger floating-surface grid size-[var(--floating-control-height)] place-items-center enabled:hover:bg-ui-hover aria-expanded:bg-ui-hover aria-expanded:text-ui-keyboard",
           "aria-label": "Workspace menu",
           children: <MenuIcon aria-hidden="true" />,
         }}
         panel={Menu}
+        placement="below-start"
         panelProps={{
-          className:
-            "menu-panel absolute top-[calc(100%+8px)] left-0 w-[min(240px,calc(100vw-48px))]",
+          className: "menu-panel w-[min(240px,calc(100vw-48px))]",
         }}
       >
         <MenuItem
@@ -42,12 +43,14 @@ export default function WorkspaceMenu() {
         <div className="menu-theme flex h-8 items-center justify-between gap-3 px-2.5 text-ui-size/[normal] font-[650]">
           <span>Theme</span>
           <Group
-            className="theme-picker flex-none gap-[3px]"
+            variant="framed"
+            className="theme-picker flex-none gap-[3px] p-0.5"
             role="group"
             aria-label="Color theme"
           >
             <Button
               variant="toggle"
+              radius="md"
               className="swatch-control aria-pressed:bg-[#f4f7fb] aria-pressed:text-[#375a7c]"
               data-theme-choice="light"
               aria-label="Light theme"
@@ -58,6 +61,7 @@ export default function WorkspaceMenu() {
             </Button>
             <Button
               variant="toggle"
+              radius="md"
               className="swatch-control aria-pressed:bg-[#3f4350] aria-pressed:text-[#e3e7f0]"
               data-theme-choice="dark"
               aria-label="Dark theme"
@@ -68,6 +72,7 @@ export default function WorkspaceMenu() {
             </Button>
             <Button
               variant="toggle"
+              radius="md"
               className="swatch-control aria-pressed:bg-ui-hover aria-pressed:text-ui-ink"
               data-theme-choice="system"
               aria-label="Follow system theme"

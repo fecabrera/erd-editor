@@ -1,19 +1,36 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "./cn";
 
-const variants = {
-  standard: "app-button",
-  primary: "app-button primary-button",
-  toggle: "rounded-ui aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard",
-  plain: "",
-};
+const buttonStyles = cva(null, {
+  variants: {
+    variant: {
+      standard: "app-button",
+      primary: "app-button primary-button",
+      toggle: "aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard",
+      plain: null,
+    },
+    radius: {
+      sm: "rounded-sm",
+      md: "rounded-md",
+      lg: "rounded-lg",
+    },
+  },
+  compoundVariants: [
+    {
+      variant: ["standard", "primary", "toggle"],
+      radius: undefined,
+      class: "rounded-lg",
+    },
+  ],
+  defaultVariants: { variant: "standard" },
+});
 
-type ButtonProps = ComponentProps<"button"> & {
-  variant?: keyof typeof variants;
-};
+type ButtonProps = ComponentProps<"button"> & VariantProps<typeof buttonStyles>;
 
 export function Button({
-  variant = "standard",
+  variant,
+  radius,
   type = "button",
   className,
   ...props
@@ -22,7 +39,7 @@ export function Button({
     <button
       {...props}
       type={type}
-      className={cn(variants[variant], className)}
+      className={cn(buttonStyles({ variant, radius }), className)}
     />
   );
 }

@@ -1,9 +1,22 @@
+import { cva } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { useSyncExternalStore } from "react";
 import { isMacPlatform } from "../../src/keyboard-shortcuts";
 import type { PrimaryShortcut } from "../../src/keyboard-shortcuts";
 import { Button } from "./button";
 import { cn } from "./cn";
+
+const menuStyles = cva(null, {
+  variants: {
+    part: {
+      panel: "menu-surface rounded-lg",
+      item: "menu-item",
+      shortcut: "ms-auto whitespace-nowrap text-ui-muted [font:inherit]",
+      separator: "my-1.5 h-px bg-ui-line",
+    },
+  },
+  defaultVariants: { part: "panel" },
+});
 
 const subscribeToPlatform = () => () => {};
 
@@ -12,7 +25,7 @@ function useMacPlatform() {
 }
 
 export function Menu({ className, ...props }: ComponentProps<"div">) {
-  return <div {...props} className={cn("menu-surface", className)} />;
+  return <div {...props} className={cn(menuStyles(), className)} />;
 }
 
 type MenuItemProps = ComponentProps<"button"> & {
@@ -29,7 +42,8 @@ function MenuItemButton({ children, className, shortcut, ...props }: MenuItemPro
     <Button
       {...props}
       variant="plain"
-      className={cn("menu-item", className)}
+      radius="lg"
+      className={cn(menuStyles({ part: "item" }), className)}
       aria-keyshortcuts={shortcutKeys}
     >
       {children}
@@ -60,10 +74,7 @@ function MenuItemShortcut({
     <kbd
       {...props}
       aria-hidden="true"
-      className={cn(
-        "ms-auto whitespace-nowrap text-ui-muted [font:inherit]",
-        className,
-      )}
+      className={cn(menuStyles({ part: "shortcut" }), className)}
     >
       {label}
     </kbd>
@@ -75,5 +86,5 @@ export const MenuItem = Object.assign(MenuItemButton, {
 });
 
 export function MenuSeparator() {
-  return <div className="my-1.5 h-px bg-ui-line" aria-hidden="true" />;
+  return <div className={menuStyles({ part: "separator" })} aria-hidden="true" />;
 }
