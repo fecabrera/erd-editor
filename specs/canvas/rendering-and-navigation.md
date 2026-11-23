@@ -60,9 +60,11 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
   an unselected card selects and moves just that card. Connector paths follow
   the cards. Pointer capture handles one active drag, and a drag begins after
   moving at least 4 CSS px.
-- Scroll over a nonempty canvas to zoom around the pointer. Plus and minus
-  buttons adjust the current scale by 1.2× or its reciprocal around the
-  center of the available area.
+- Scroll over a nonempty canvas to pan horizontally or vertically.
+  Hold Shift while scrolling to pan horizontally.
+  Ctrl-scroll, Command-scroll on macOS, and trackpad pinch zoom around the
+  pointer. Plus and minus buttons adjust the current scale by 1.2× or its
+  reciprocal around the center of the available area.
 - Edit the percentage directly. Enter or leaving the field commits it.
   Escape restores the last value. An optional percent sign and decimal
   commas are accepted. Reject zero, negative, or invalid input, restore

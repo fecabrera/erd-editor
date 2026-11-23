@@ -90,6 +90,7 @@ export function mountEditor() {
     "transparent-background",
   );
   const status = find("schema-status");
+  const isMac = navigator.platform.startsWith("Mac");
   const frame = { width: 0, height: 0, ratio: 1 };
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
@@ -465,7 +466,7 @@ export function mountEditor() {
 
   function updateCanvasLabel() {
     let label = scene.tables.length
-      ? `Schema diagram with ${scene.tables.length} tables and ${scene.links.length} relationships. Hold Space or the middle mouse button and drag to pan, or use arrow keys. Use plus or minus to zoom.`
+      ? `Schema diagram with ${scene.tables.length} tables and ${scene.links.length} relationships. Scroll, drag with Space or the middle mouse button held, or use arrow keys to pan. Use plus or minus to zoom.`
       : "No tables in the diagram.";
     if (selectedTableIds.size === 1) {
       const [id] = selectedTableIds;
@@ -669,9 +670,20 @@ export function mountEditor() {
     (event) => {
       if (!scene.tables.length) return;
       event.preventDefault();
-      const { x, y } = pointer(event);
-      const amount = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
-      zoom(Math.exp(-Math.max(-200, Math.min(200, amount)) * 0.0018), x, y);
+      const line = event.deltaMode === WheelEvent.DOM_DELTA_LINE;
+      const page = event.deltaMode === WheelEvent.DOM_DELTA_PAGE;
+      const dy = event.deltaY * (line ? 16 : page ? frame.height : 1);
+      if (event.ctrlKey || (isMac && event.metaKey)) {
+        const { x, y } = pointer(event);
+        zoom(Math.exp(-Math.max(-200, Math.min(200, dy)) * 0.0018), x, y);
+      } else {
+        const horizontalDelta = event.shiftKey
+          ? event.deltaX || event.deltaY
+          : event.deltaX;
+        view.x -= horizontalDelta * (line ? 16 : page ? frame.width : 1);
+        if (!event.shiftKey) view.y -= dy;
+        repaint();
+      }
     },
     { passive: false },
   );
