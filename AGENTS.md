@@ -52,3 +52,8 @@ app compatible with Next.js static export.
   source files to update the app. Treat `.next/` and `out/` as generated
   outputs.
 - Preserve unrelated changes. Commit, push, or publish only when requested.
+- Follow Conventional Commits 1.0.0 for commit messages. Use a header such as
+  `fix: match the zoom controls to the diagram summary`. Write the summary and
+  any body in plain language. State what changed directly and use the body
+  when the reason needs more context.
+  [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
