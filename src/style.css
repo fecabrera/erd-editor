@@ -137,6 +137,21 @@
     text-white enabled:hover:bg-ui-accent-hover;
 }
 
+@utility floating-surface {
+  @apply rounded-lg border border-ui-line bg-ui-surface text-ui-size/[normal]
+    text-ui-muted shadow-sm;
+}
+
+@utility menu-surface {
+  @apply rounded-xl border border-ui-line bg-ui-surface p-1.5
+    shadow-[0_8px_24px_rgba(0,0,0,0.16)];
+}
+
+@utility menu-item {
+  @apply flex h-8 w-full items-center gap-2.5 rounded-[7px] px-2.5
+    text-start text-ui-size/[normal] font-[650] enabled:hover:bg-ui-hover;
+}
+
 @utility pane {
   @apply flex min-h-0 min-w-0 flex-col overflow-hidden border border-ui-line
     bg-ui-surface shadow-[0_1px_2px_rgba(19,40,62,0.045)];
@@ -162,15 +177,15 @@
 }
 
 @utility zoom-control {
-  @apply grid min-h-0 min-w-[35px] place-items-center px-[9px]
-    text-ui-size/[normal] text-ui-ink;
+  @apply grid min-h-0 min-w-[35px] place-items-center px-[9px];
 }
 
-@utility export-choice {
+@utility choice-control {
   @apply flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border
     border-ui-line bg-ui-button px-2.5 py-[7px] text-ui-size/[normal]
     has-checked:border-ui-keyboard has-checked:bg-ui-hover
-    has-disabled:cursor-default has-disabled:text-ui-muted has-disabled:opacity-60;
+    has-disabled:cursor-default has-disabled:text-ui-muted has-disabled:opacity-60
+    [&>input]:flex-none [&>input]:accent-ui-keyboard;
 }
 
 @media (width < 761px) {
