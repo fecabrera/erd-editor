@@ -1,4 +1,5 @@
 import { ImageDown, Menu as MenuIcon, Monitor, Moon, Sun } from "lucide-react";
+import { exportImageShortcut } from "../src/keyboard-shortcuts";
 import { Button } from "./ui/button";
 import { Dropdown } from "./ui/dropdown";
 import { Group } from "./ui/group";
@@ -32,11 +33,10 @@ export default function WorkspaceMenu() {
           id="open-export"
           type="button"
           aria-haspopup="dialog"
-          aria-keyshortcuts="Shift+Control+E"
+          shortcut={exportImageShortcut}
           disabled
         >
           <ImageDown aria-hidden="true" /> Export image
-          <MenuItem.Shortcut id="export-shortcut">Shift+Ctrl+E</MenuItem.Shortcut>
         </MenuItem>
         <MenuSeparator />
         <div className="menu-theme flex h-8 items-center justify-between gap-3 px-2.5 text-ui-size/[normal] font-[650]">

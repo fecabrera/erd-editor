@@ -18,6 +18,7 @@ import {
 } from "./draw";
 import type { DiagramHover, Palette } from "./draw";
 import { example } from "./example";
+import { exportImageShortcut, isMacPlatform } from "./keyboard-shortcuts";
 import { systemThemeQuery, themeColors, themeStorageKey } from "./theme";
 
 const DRAG_THRESHOLD = 4;
@@ -92,7 +93,7 @@ export function mountEditor() {
     "transparent-background",
   );
   const status = find("schema-status");
-  const isMac = navigator.platform.startsWith("Mac");
+  const isMac = isMacPlatform();
   const frame = { width: 0, height: 0, ratio: 1 };
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
@@ -641,7 +642,12 @@ export function mountEditor() {
     const exportModifier = isMac
       ? event.metaKey && !event.ctrlKey
       : event.ctrlKey && !event.metaKey;
-    if (key === "e" && event.shiftKey && exportModifier && !event.altKey) {
+    if (
+      key === exportImageShortcut.key.toLowerCase() &&
+      event.shiftKey === exportImageShortcut.shift &&
+      exportModifier &&
+      !event.altKey
+    ) {
       if (
         event.repeat || event.isComposing || openExport.disabled || exportDialog.open
       )
@@ -776,10 +782,6 @@ export function mountEditor() {
       setMenuOpen(false);
     }
   });
-  if (isMac) {
-    openExport.setAttribute("aria-keyshortcuts", "Shift+Meta+E");
-    find("export-shortcut").textContent = "⇧⌘E";
-  }
   on(openExport, "click", () => {
     setMenuOpen(false);
     exportDialog.showModal();

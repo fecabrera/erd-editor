@@ -3,7 +3,7 @@
 ## Dialog
 
 Open **Export image** from the workspace menu or press **Shift–Command–E**
-on macOS or **Ctrl+Shift+E** on other platforms.
+on macOS or **Shift+Ctrl+E** on other platforms.
 The dialog contains **Format** (PNG or JPG) and **Background** (Theme color or
 Transparent). It defaults to PNG and Theme color on page load. The format
 and background options and the Cancel and Download buttons are 32 px tall.

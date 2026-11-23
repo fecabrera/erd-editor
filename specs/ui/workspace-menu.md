@@ -16,7 +16,7 @@ A single floating burger button opens the actions for export and theme.
   press, when focus moves outside the workspace menu, or on Escape. Escape
   returns focus to the burger. The tab order follows the markup.
 - **Export image** is available after a successful parse with at least one
-  table. The menu item shows **⇧⌘E** on macOS or **Ctrl+Shift+E** on other
+  table. The menu item shows **⇧⌘E** on macOS or **Shift+Ctrl+E** on other
   platforms, in the same font as its label. The shortcut opens the dialog
   from anywhere in the workspace. Opening the dialog closes the menu.
   Closing the dialog returns focus to the burger.
