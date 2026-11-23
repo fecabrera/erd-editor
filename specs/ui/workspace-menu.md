@@ -16,8 +16,10 @@ A single floating burger button opens the actions for export and theme.
   press, when focus moves outside the workspace menu, or on Escape. Escape
   returns focus to the burger. The tab order follows the markup.
 - **Export image** is available after a successful parse with at least one
-  table. Opening it closes the menu and launches the modal dialog. Closing
-  the dialog returns focus to the burger.
+  table. The menu item shows **⇧⌘E** on macOS or **Ctrl+Shift+E** on other
+  platforms, in the same font as its label. The shortcut opens the dialog
+  from anywhere in the workspace. Opening the dialog closes the menu.
+  Closing the dialog returns focus to the burger.
 - Activating a swatch keeps the menu open, updates the selected button's
   `aria-pressed` state, and applies the theme to the whole interface and
   diagram. Follow system is the default when no theme preference is saved.

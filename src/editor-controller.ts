@@ -637,13 +637,25 @@ export function mountEditor() {
     if (activeDrag?.id === event.pointerId) finishDrag();
   });
   on(document, "keydown", (event) => {
+    const key = event.key.toLowerCase();
+    const exportModifier = isMac
+      ? event.metaKey && !event.ctrlKey
+      : event.ctrlKey && !event.metaKey;
+    if (key === "e" && event.shiftKey && exportModifier && !event.altKey) {
+      if (
+        event.repeat || event.isComposing || openExport.disabled || exportDialog.open
+      )
+        return;
+      event.preventDefault();
+      openExport.click();
+      return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.code === "Space") {
       setSpacePressed(true);
       if (document.activeElement === canvas) event.preventDefault();
       return;
     }
-    const key = event.key.toLowerCase();
     if ((key !== "v" && key !== "m") || event.isComposing || exportDialog.open)
       return;
     const target = event.target;
@@ -764,6 +776,10 @@ export function mountEditor() {
       setMenuOpen(false);
     }
   });
+  if (isMac) {
+    openExport.setAttribute("aria-keyshortcuts", "Shift+Meta+E");
+    find("export-shortcut").textContent = "⇧⌘E";
+  }
   on(openExport, "click", () => {
     setMenuOpen(false);
     exportDialog.showModal();
