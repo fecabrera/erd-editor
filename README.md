@@ -4,6 +4,16 @@ Schema Studio is a browser-based editor for database diagrams. Paste DBML to see
 
 [Try the live demo](https://erd-editor-phi.vercel.app)
 
+<p align="center">
+<a href="https://github.com/fecabrera/erd-editor/commits/main/">
+<img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/fecabrera/erd-editor/main">
+</a>
+
+<a href="LICENSE">
+<img alt="GitHub License" src="https://img.shields.io/github/license/fecabrera/erd-editor">
+</a>
+</p>
+
 ## Screenshots
 
 <p>
