@@ -163,7 +163,7 @@
 
 @utility pane-bar {
   @apply flex min-h-[var(--floating-control-height)] shrink-0 items-center justify-between gap-2.5
-    border-ui-line px-[15px] py-1.5;
+    border-ui-line px-3 py-1.5;
 }
 
 @utility code-text {

@@ -13,6 +13,7 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Interface text | `--text-ui-size` at `0.75rem` or 12 px with the default root size. It applies to the summary, legend, editor heading and code, menu, controls, dialogs, and feedback. |
 | Font family | System sans serif with Inter first. The editor and SQL type text use system monospace. |
 | Shared control height | `--floating-control-height` at `2.25rem` or 36 px by default. It applies to the editor header and footer, burger button, summary, and zoom group. |
+| Bar padding | The editor header, editor footer, and diagram info use 12 px of horizontal padding and 6 px of vertical padding. |
 | Corner radius | Surfaces and controls use `rounded-ui` at 8 px. The end buttons in the zoom group use the `--radius-ui-edge` token, which subtracts the group's 1 px border from the shared radius. |
 | Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, and small shadow. |
 | Diagram toolbar | The buttons are 32 × 32 px, with 4 px of toolbar padding and a 4 px gap. Each button shows its main shortcut in the bottom-right corner. The toolbar is 42 px high, including its border. |
@@ -37,7 +38,7 @@ Canvas card lettering and badge sizes are part of the diagram renderer.
 | `Input` | Renders a native text input with the shared focus outline. Give the field an accessible label and set its width and alignment through `className`. |
 | `Dropdown` | Renders a trigger and a panel linked by ID. The caller owns open state, dismissal, focus behavior, and placement. The panel can use `Menu` or hold other controls. |
 | `Menu` | Provides the themed panel, with `MenuItem` for action buttons and `MenuSeparator` for visual dividers. Actions use native buttons and normal Tab navigation. |
-| `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. `Card.Content` fills the available space inside the card and lets the caller set the inner layout. |
+| `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. `Card.Header` and `Card.Footer` provide shared spacing and dividers. `Card.Content` fills the available space and lets the caller set the inner layout. |
 | `Toast` | Displays a status message at the bottom of the viewport. The caller supplies the message and controls visibility and dismissal timing. |
 
 [Component source](../../app/ui/)

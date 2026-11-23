@@ -8,14 +8,14 @@ export default function EditorPane() {
       id="editor-pane"
       aria-labelledby="source-heading"
     >
-      <header className="panel-heading pane-bar border-b">
+      <Card.Header className="panel-heading">
         <h2
           id="source-heading"
           className="text-ui-size/[1.4] font-bold tracking-[-0.018em]"
         >
           Editor
         </h2>
-      </header>
+      </Card.Header>
       <Card.Content className="editor relative flex bg-ui-subtle focus-within:inset-ring-1 focus-within:inset-ring-ui-keyboard">
         <pre
           id="line-numbers"
@@ -44,7 +44,7 @@ export default function EditorPane() {
         className="syntax-error max-h-[110px] overflow-auto border-t border-ui-line bg-ui-error-bg px-[15px] py-2.5 text-ui-size/[normal] text-ui-error"
         hidden
       ></p>
-      <div className="editor-footer pane-bar border-t text-ui-size/[normal] text-ui-muted">
+      <Card.Footer className="editor-footer text-ui-size/[normal] text-ui-muted">
         <span
           id="schema-status"
           className="group inline-flex items-center gap-2"
@@ -54,7 +54,7 @@ export default function EditorPane() {
           <span id="schema-status-text">Loading schema</span>
         </span>
         <span id="line-count">0 lines</span>
-      </div>
+      </Card.Footer>
     </Card>
   );
 }
