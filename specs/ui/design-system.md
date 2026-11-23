@@ -30,7 +30,7 @@ Canvas card lettering and badge sizes are part of the diagram renderer.
 
 | Component | Usage |
 | --- | --- |
-| `Button` | Use the standard or primary style for actions, or the plain variant with custom styles. The default type is `button`. Set `type="submit"` for form submission. |
+| `Button` | Use the standard or primary style for actions, or the plain variant with custom styles. The toggle variant shares the standard radius and pressed ring across theme swatches and toolbar buttons. The default type is `button`. Set `type="submit"` for form submission. |
 | `Choice` | Renders a styled radio option with a clickable label. Give related options the same `name` and group them in a fieldset with a legend. |
 | `Dialog` | Renders a native dialog with a themed surface and dimmed backdrop. Give it an accessible name and use `showModal()` and `close()` to control it. |
 | `Group` | Arrange related elements in a row or grid. Supply spacing and alignment through `className` and add a group role and label when the controls need an accessible name. |

@@ -175,9 +175,8 @@
 }
 
 @utility swatch-control {
-  @apply grid h-6 w-7 place-items-center rounded-ui bg-transparent p-0
-    text-ui-muted hover:text-ui-ink aria-pressed:inset-ring-1
-    aria-pressed:inset-ring-ui-keyboard;
+  @apply grid h-6 w-7 place-items-center bg-transparent p-0
+    text-ui-muted hover:text-ui-ink;
 }
 
 @utility zoom-control {

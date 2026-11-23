@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Group } from "./ui/group";
 
 const toolButtonStyle =
-  "relative grid size-8 place-items-center rounded-ui enabled:hover:bg-ui-hover aria-pressed:bg-ui-hover aria-pressed:text-ui-keyboard aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard";
+  "relative grid size-8 place-items-center enabled:hover:bg-ui-hover aria-pressed:bg-ui-hover aria-pressed:text-ui-keyboard";
 
 const shortcutStyle =
   "pointer-events-none absolute right-[3px] bottom-0.5 text-[8px]/none font-semibold";
@@ -17,7 +17,7 @@ export default function DiagramToolbar() {
       aria-label="Diagram tools"
     >
       <Button
-        variant="plain"
+        variant="toggle"
         id="diagram-tool-pointer"
         className={toolButtonStyle}
         aria-label="Pointer"
@@ -31,7 +31,7 @@ export default function DiagramToolbar() {
         </kbd>
       </Button>
       <Button
-        variant="plain"
+        variant="toggle"
         id="diagram-tool-hand"
         className={toolButtonStyle}
         aria-label="Hand"

@@ -45,7 +45,7 @@ export default function WorkspaceMenu() {
             aria-label="Color theme"
           >
             <Button
-              variant="plain"
+              variant="toggle"
               className="swatch-control aria-pressed:bg-[#f4f7fb] aria-pressed:text-[#375a7c]"
               data-theme-choice="light"
               aria-label="Light theme"
@@ -55,7 +55,7 @@ export default function WorkspaceMenu() {
               <Sun aria-hidden="true" />
             </Button>
             <Button
-              variant="plain"
+              variant="toggle"
               className="swatch-control aria-pressed:bg-[#3f4350] aria-pressed:text-[#e3e7f0]"
               data-theme-choice="dark"
               aria-label="Dark theme"
@@ -65,7 +65,7 @@ export default function WorkspaceMenu() {
               <Moon aria-hidden="true" />
             </Button>
             <Button
-              variant="plain"
+              variant="toggle"
               className="swatch-control aria-pressed:bg-ui-hover aria-pressed:text-ui-ink"
               data-theme-choice="system"
               aria-label="Follow system theme"

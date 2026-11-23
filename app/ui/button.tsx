@@ -4,6 +4,7 @@ import { cn } from "./cn";
 const variants = {
   standard: "app-button",
   primary: "app-button primary-button",
+  toggle: "rounded-ui aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard",
   plain: "",
 };
 
