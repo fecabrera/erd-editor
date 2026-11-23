@@ -77,6 +77,25 @@ export function drawGrid(
   ctx.fill();
 }
 
+export function drawSelectionBox(
+  ctx: CanvasRenderingContext2D,
+  start: Point,
+  end: Point,
+  palette: Palette,
+) {
+  const width = end.x - start.x;
+  const height = end.y - start.y;
+  ctx.save();
+  ctx.fillStyle = palette.highlightLine;
+  ctx.globalAlpha = 0.14;
+  ctx.fillRect(start.x, start.y, width, height);
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = palette.highlightLine;
+  ctx.strokeRect(start.x, start.y, width, height);
+  ctx.restore();
+}
+
 function roundedConnector(points: ReturnType<typeof routeLink>) {
   const path = new Path2D();
   path.moveTo(points[0].x, points[0].y);
@@ -274,7 +293,7 @@ export function drawGraph(
   scene: Scene,
   palette: Palette,
   hovered?: DiagramHover,
-  selectedTableId?: string,
+  selectedTableIds?: ReadonlySet<string>,
 ) {
   const highlight = hovered?.connection
     ? highlightConnections([hovered.connection])
@@ -302,7 +321,7 @@ export function drawGraph(
       table,
       palette,
       highlight?.rows.get(table.id),
-      hovered?.table?.tableId === table.id || selectedTableId === table.id,
+      hovered?.table?.tableId === table.id || selectedTableIds?.has(table.id),
     );
   }
 }

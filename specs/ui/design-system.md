@@ -62,7 +62,7 @@ colors, and theme-specific legend text. The displayed sizes in px assume a
 
 ## Interaction and acceptance criteria
 
-- Keyboard focus is visible on buttons and the canvas. Icon-only controls
+- Keyboard focus is visible on buttons. Icon-only controls
   have accessible names. Decorative icons are hidden from assistive technology.
 - Disabled actions use lower opacity. The selected theme swatch has a tinted
   surface and inset ring as well as the accessible pressed state. Unselected

@@ -120,8 +120,7 @@
     @apply cursor-pointer disabled:cursor-default disabled:opacity-45;
   }
 
-  button:focus-visible,
-  canvas:focus-visible {
+  button:focus-visible {
     @apply outline-2 outline-offset-2 outline-ui-keyboard;
   }
 }

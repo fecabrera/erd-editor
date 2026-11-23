@@ -87,6 +87,28 @@ export function tableTargetAtPoint(
   return { tableId: table.id, fieldName: field?.name };
 }
 
+export function tableIdsInRectangle(
+  tables: PositionedTable[],
+  start: Point,
+  end: Point,
+) {
+  const left = Math.min(start.x, end.x);
+  const right = Math.max(start.x, end.x);
+  const top = Math.min(start.y, end.y);
+  const bottom = Math.max(start.y, end.y);
+  return new Set(
+    tables
+      .filter(
+        (table) =>
+          table.x <= right &&
+          table.x + table.width >= left &&
+          table.y <= bottom &&
+          table.y + table.height >= top,
+      )
+      .map((table) => table.id),
+  );
+}
+
 export function highlightConnections(
   links: PositionedLink[],
   rows = new Map<string, Set<string>>(),

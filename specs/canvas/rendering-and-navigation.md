@@ -21,11 +21,13 @@ exports. [Canvas palette tokens](../../src/style.css)
 
 ## Table selection and hover
 
-Click or tap a table header or field row to select the table. The selected
-card keeps the same outline used for hover when the pointer moves away.
-Clicking another table selects it instead. Click open canvas or press Escape
-with canvas focus to clear the selection. A schema edit keeps the selection
-if the table still exists under the same name. Selection appears in the
+Click or tap a table header or field row to select the table. With a mouse
+or pen, drag from open canvas to draw a selection box. The preview outlines
+each table the box touches, and releasing replaces the selection with those
+tables. Selected cards keep the same outline used for hover. Click open
+canvas or press Escape with canvas focus to clear the selection. During
+box selection, Escape cancels the gesture. Schema edits preserve selected
+tables that still exist under the same names. Selection appears in the
 preview only.
 
 Hovering anywhere on a table outlines the card. Hovering over a field also
@@ -41,10 +43,15 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
 - Start at 100% on a fresh load and center the diagram in the available
   area. Resizing or laying out a changed schema recenters at the current
   scale.
-- Drag the background to pan. Drag a table header to move that table.
-  Connector paths follow the cards. Pointer capture handles one active drag.
-  Moving the pointer at least 4 CSS px starts a drag without changing the
-  selection.
+- Hold Space and drag anywhere on the canvas to pan. On touch screens,
+  drag from open canvas to pan.
+- The canvas uses the regular arrow at rest, a crosshair while drawing a
+  selection box, and the move cursor while dragging cards. Holding Space
+  shows the grab cursor, which changes to grabbing during a pan drag.
+- Drag anywhere on a selected card to move the entire selection. Dragging
+  an unselected card selects and moves just that card. Connector paths follow
+  the cards. Pointer capture handles one active drag, and a drag begins after
+  moving at least 4 CSS px.
 - Scroll over a nonempty canvas to zoom around the pointer. Plus and minus
   buttons adjust the current scale by 1.2× or its reciprocal around the
   center of the available area.
@@ -56,8 +63,8 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
 - **Fit** centers and scales the graph into the area clear of the editor,
   summary, and zoom controls, with an upper fitting scale of 114%.
 - With canvas focus, arrows pan by 40 CSS px, plus and minus zoom, and
-  zero calls Fit. The canvas accessible name announces diagram counts and
-  indicates available keyboard controls.
+  zero calls Fit. The canvas remains focusable with its outline hidden.
+  Its accessible name announces diagram counts and available keyboard controls.
 
 ## Acceptance criteria
 
@@ -65,6 +72,6 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
   for diagrams larger than the visible area.
 - Dragging a table updates its connectors. Zooming and panning do not change
   schema content.
-- A table remains selected after the pointer leaves it. Dragging a card or
-  panning keeps the current selection.
+- Box selection works in any drag direction. Panning keeps the current
+  selection and dragging any selected card moves all selected cards together.
 - A rejected zoom value leaves the previous view intact.

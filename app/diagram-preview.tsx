@@ -16,10 +16,10 @@ export default function DiagramPreview() {
       >
         <canvas
           id="diagram"
-          className="block size-full cursor-grab touch-none [&.dragging]:cursor-grabbing focus-visible:outline-offset-[-3px]"
+          className="block size-full cursor-default touch-none outline-none data-[drag=select]:cursor-crosshair data-[drag=move]:cursor-move data-[drag=pan]:cursor-grabbing [&.pan-ready:not([data-drag])]:cursor-grab"
           tabIndex={0}
           role="img"
-          aria-label="Schema diagram. Use arrow keys to pan and plus or minus to zoom."
+          aria-label="Schema diagram. Hold Space and drag or use arrow keys to pan. Use plus or minus to zoom."
         ></canvas>
         <div
           id="empty"

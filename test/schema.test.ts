@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { example } from "../src/example";
 import {
   describeError,
+  tableIdsInRectangle,
   tableTargetAtPoint,
   HEADER,
   highlightConnections,
@@ -137,6 +138,30 @@ test("finds the hovered table and identifies its field when present", () => {
     { tableId: "public.customers", fieldName: undefined },
   );
   assert.equal(tableTargetAtPoint(tables, { x: -1, y: -1 }), undefined);
+});
+
+test("selects every table touched by a rectangle drawn in either direction", () => {
+  const { tables } = layoutSchema(
+    parseSchema("Table left_card {\n id integer\n}\nTable right_card {\n id integer\n}"),
+    (text) => text.length * 8,
+  );
+  const [left, right] = tables;
+  Object.assign(left, { x: 0, y: 0 });
+  Object.assign(right, { x: left.width + 20, y: 0 });
+
+  const start = { x: left.width - 10, y: -10 };
+  const end = { x: right.x + 10, y: 10 };
+  const expected = new Set([left.id, right.id]);
+  assert.deepEqual(tableIdsInRectangle(tables, start, end), expected);
+  assert.deepEqual(tableIdsInRectangle(tables, end, start), expected);
+  assert.deepEqual(
+    tableIdsInRectangle(
+      tables,
+      { x: left.width + 1, y: 0 },
+      { x: right.x - 1, y: 10 },
+    ),
+    new Set(),
+  );
 });
 
 test("highlights direct connections and their endpoint fields only", () => {
