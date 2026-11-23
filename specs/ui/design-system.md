@@ -37,7 +37,7 @@ Canvas card lettering and badge sizes are part of the diagram renderer.
 | `Input` | Renders a native text input with the shared focus outline. Give the field an accessible label and set its width and alignment through `className`. |
 | `Dropdown` | Renders a trigger and a panel linked by ID. The caller owns open state, dismissal, focus behavior, and placement. The panel can use `Menu` or hold other controls. |
 | `Menu` | Provides the themed panel, with `MenuItem` for action buttons and `MenuSeparator` for visual dividers. Actions use native buttons and normal Tab navigation. |
-| `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. |
+| `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. `Card.Content` fills the available space inside the card and lets the caller set the inner layout. |
 | `Toast` | Displays a status message at the bottom of the viewport. The caller supplies the message and controls visibility and dismissal timing. |
 
 [Component source](../../app/ui/)

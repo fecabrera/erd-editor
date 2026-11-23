@@ -16,7 +16,7 @@ export default function EditorPane() {
           Editor
         </h2>
       </header>
-      <div className="editor relative flex min-h-0 flex-1 bg-ui-subtle focus-within:inset-ring-1 focus-within:inset-ring-ui-keyboard">
+      <Card.Content className="editor relative flex bg-ui-subtle focus-within:inset-ring-1 focus-within:inset-ring-ui-keyboard">
         <pre
           id="line-numbers"
           className="code-text w-[43px] flex-none overflow-hidden border-r border-ui-line py-3.5 pr-2 pl-0.5 text-right text-ui-numbers select-none"
@@ -38,7 +38,7 @@ export default function EditorPane() {
             wrap="off"
           ></textarea>
         </div>
-      </div>
+      </Card.Content>
       <p
         id="syntax-error"
         className="syntax-error max-h-[110px] overflow-auto border-t border-ui-line bg-ui-error-bg px-[15px] py-2.5 text-ui-size/[normal] text-ui-error"

@@ -5,7 +5,7 @@ type CardProps = ComponentProps<"div"> & {
   as?: "div" | "section" | "article";
 };
 
-export function Card({ as: Element = "div", className, ...props }: CardProps) {
+function CardRoot({ as: Element = "div", className, ...props }: CardProps) {
   return (
     <Element
       {...props}
@@ -13,3 +13,11 @@ export function Card({ as: Element = "div", className, ...props }: CardProps) {
     />
   );
 }
+
+function CardContent({ className, ...props }: ComponentProps<"div">) {
+  return <div {...props} className={cn("min-h-0 flex-1", className)} />;
+}
+
+export const Card = Object.assign(CardRoot, {
+  Content: CardContent,
+});
