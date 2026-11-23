@@ -14,6 +14,8 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Font family | System sans serif with Inter first. The editor and SQL type text use system monospace. |
 | Shared control height | `--floating-control-height` at `2.25rem` or 36 px by default. It applies to the editor header and footer, burger button, summary, and zoom group. |
 | Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, 8 px radius, and small shadow. |
+| Diagram toolbar | The buttons are 32 × 32 px, with 4 px of toolbar padding and a 4 px gap. Each button shows its main shortcut in the bottom-right corner. The toolbar is 42 px high, including its border. |
+| Zoom controls | Zoom Out, Zoom In, and Fit share a 35 px button width. |
 | Burger and theme buttons | The burger is square. The light, dark, and system swatches each measure 28 × 24 px by default, with 3 px between swatches. |
 | Icons | Lucide SVGs share a 16 × 16 px default size through the base styling rule. |
 | Buttons | Standard buttons use a 40 px minimum height and an 8 px radius. The export dialog uses 32 px options and footer buttons. The primary action uses the theme accent. |

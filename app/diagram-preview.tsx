@@ -1,4 +1,5 @@
 import DiagramInfo from "./diagram-info";
+import DiagramToolbar from "./diagram-toolbar";
 import ZoomControls from "./zoom-controls";
 
 export default function DiagramPreview() {
@@ -10,6 +11,7 @@ export default function DiagramPreview() {
       <h2 id="preview-heading" className="sr-only">
         Diagram preview
       </h2>
+      <DiagramToolbar />
       <div
         id="viewport"
         className="viewport absolute inset-0 overflow-hidden bg-ui-canvas"
@@ -19,7 +21,7 @@ export default function DiagramPreview() {
           className="block size-full cursor-default touch-none outline-none data-[drag=select]:cursor-crosshair data-[drag=move]:cursor-move data-[drag=pan]:cursor-grabbing [&.pan-ready:not([data-drag])]:cursor-grab"
           tabIndex={0}
           role="img"
-          aria-label="Schema diagram. Hold Space and drag or use arrow keys to pan. Use plus or minus to zoom."
+          aria-label="Schema diagram. Hold Space or the middle mouse button and drag to pan, or use arrow keys. Use plus or minus to zoom."
         ></canvas>
         <div
           id="empty"

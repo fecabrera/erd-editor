@@ -21,6 +21,11 @@ exports. [Canvas palette tokens](../../src/style.css)
 
 ## Table selection and hover
 
+**Pointer** starts selected in the diagram toolbar. It supports clicking to
+select, dragging a selection box, and moving tables. Press **V** to switch
+to Pointer or **M** to switch to Hand. In editable fields, both keys type
+as usual.
+
 Click or tap a table header or field row to select the table. With a mouse
 or pen, drag from open canvas to draw a selection box. The preview outlines
 each table the box touches, and releasing replaces the selection with those
@@ -43,11 +48,14 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
 - Start at 100% on a fresh load and center the diagram in the available
   area. Resizing or laying out a changed schema recenters at the current
   scale.
-- Hold Space and drag anywhere on the canvas to pan. On touch screens,
-  drag from open canvas to pan.
+- Choose **Hand** to pan by dragging anywhere on the canvas. Holding Space
+  or the middle mouse button on the canvas temporarily selects Hand in the
+  toolbar. Releasing the last held shortcut restores the previous tool.
+  On touch screens, dragging from open canvas pans in either mode.
 - The canvas uses the regular arrow at rest, a crosshair while drawing a
-  selection box, and the move cursor while dragging cards. Holding Space
-  shows the grab cursor, which changes to grabbing during a pan drag.
+  selection box, and the move cursor while dragging cards. Hand mode and
+  holding either pan shortcut show the grab cursor, which changes to
+  grabbing during a pan drag.
 - Drag anywhere on a selected card to move the entire selection. Dragging
   an unselected card selects and moves just that card. Connector paths follow
   the cards. Pointer capture handles one active drag, and a drag begins after
@@ -61,7 +69,8 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
   the previous value, and show feedback. Positive typed values are clamped
   to 0.1%–300%.
 - **Fit** centers and scales the graph into the area clear of the editor,
-  summary, and zoom controls, with an upper fitting scale of 114%.
+  summary, diagram toolbar, and zoom controls, with an upper fitting scale
+  of 114%.
 - With canvas focus, arrows pan by 40 CSS px, plus and minus zoom, and
   zero calls Fit. The canvas remains focusable with its outline hidden.
   Its accessible name announces diagram counts and available keyboard controls.

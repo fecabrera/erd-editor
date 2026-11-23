@@ -20,11 +20,14 @@ import type { DiagramHover, Palette } from "./draw";
 import { example } from "./example";
 
 const DRAG_THRESHOLD = 4;
+const MIDDLE_MOUSE_BUTTON = 1;
+const MIDDLE_MOUSE_BUTTON_MASK = 4;
 
 type CanvasDrag = {
   id: number;
   origin: Point;
   moved: boolean;
+  middleButton: boolean;
 } & (
   | { kind: "select"; end: Point }
   | { kind: "pan"; start: Point; clearOnTap: boolean }
@@ -59,6 +62,9 @@ export function mountEditor() {
   const editor = find<HTMLTextAreaElement>("dbml");
   const editorPane = find("editor-pane");
   const diagramInfo = find("diagram-info");
+  const diagramToolbar = find("diagram-toolbar");
+  const pointerTool = find<HTMLButtonElement>("diagram-tool-pointer");
+  const handTool = find<HTMLButtonElement>("diagram-tool-hand");
   const diagramNavigation = find("diagram-navigation");
   const zoomInput = find<HTMLInputElement>("zoom-level");
   const highlight = find("highlight");
@@ -92,6 +98,7 @@ export function mountEditor() {
   let palette: Palette;
   let pngBackground = "theme";
   let activeDrag: CanvasDrag | undefined;
+  let handToolSelected = false;
   let spacePressed = false;
   let hoverPosition: Point | undefined;
   let hovered: DiagramHover | undefined;
@@ -198,7 +205,11 @@ export function mountEditor() {
     const stacked = editorBox.width > frame.width / 2;
     const left = stacked ? 14 : editorBox.right - canvasBox.left + 16;
     const right = frame.width - 14;
-    const top = diagramInfo.getBoundingClientRect().bottom - canvasBox.top + 14;
+    const top =
+      Math.max(
+        diagramInfo.getBoundingClientRect().bottom,
+        diagramToolbar.getBoundingClientRect().bottom,
+      ) - canvasBox.top + 14;
     const bottom =
       diagramNavigation.getBoundingClientRect().top - canvasBox.top - 14;
     return {
@@ -454,7 +465,7 @@ export function mountEditor() {
 
   function updateCanvasLabel() {
     let label = scene.tables.length
-      ? `Schema diagram with ${scene.tables.length} tables and ${scene.links.length} relationships. Hold Space and drag or use arrow keys to pan. Use plus or minus to zoom.`
+      ? `Schema diagram with ${scene.tables.length} tables and ${scene.links.length} relationships. Hold Space or the middle mouse button and drag to pan, or use arrow keys. Use plus or minus to zoom.`
       : "No tables in the diagram.";
     if (selectedTableIds.size === 1) {
       const [id] = selectedTableIds;
@@ -482,23 +493,41 @@ export function mountEditor() {
 
   function finishDrag() {
     if (!activeDrag) return;
-    const { id } = activeDrag;
+    const { id, middleButton } = activeDrag;
     activeDrag = undefined;
     if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
     delete canvas.dataset.drag;
+    if (middleButton) updateDiagramTool();
     repaint();
   }
 
   function setSpacePressed(pressed: boolean) {
     spacePressed = pressed;
-    canvas.classList.toggle("pan-ready", pressed);
+    updateDiagramTool();
+  }
+
+  function setHandTool(active: boolean) {
+    handToolSelected = active;
+    updateDiagramTool();
+  }
+
+  function isHandToolActive() {
+    return handToolSelected || spacePressed || activeDrag?.middleButton === true;
+  }
+
+  function updateDiagramTool() {
+    const active = isHandToolActive();
+    pointerTool.setAttribute("aria-pressed", String(!active));
+    handTool.setAttribute("aria-pressed", String(active));
+    canvas.classList.toggle("pan-ready", active);
+    if (active) updateHover();
   }
 
   function updateHover(position?: Point) {
-    hoverPosition = position;
+    hoverPosition = isHandToolActive() ? undefined : position;
     const target =
-      position &&
-      hoverAtPoint(context, scene, diagramPoint(position), view.scale);
+      hoverPosition &&
+      hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale);
     if (
       target?.table?.tableId !== hovered?.table?.tableId ||
       target?.table?.fieldName !== hovered?.table?.fieldName ||
@@ -509,20 +538,22 @@ export function mountEditor() {
   }
 
   on(canvas, "pointerdown", (event) => {
-    if (event.button !== 0 || activeDrag) return;
+    const middleButton = event.button === MIDDLE_MOUSE_BUTTON;
+    if (middleButton) event.preventDefault();
+    if (activeDrag || (event.button !== 0 && !middleButton)) return;
     const origin = pointer(event);
     updateHover();
-    const start = { id: event.pointerId, origin, moved: false };
-    const tableId = tableTargetAtPoint(
-      scene.tables,
-      diagramPoint(origin),
-    )?.tableId;
-    if (spacePressed || (tableId === undefined && event.pointerType === "touch")) {
+    const start = { id: event.pointerId, origin, moved: false, middleButton };
+    const panning = middleButton || isHandToolActive();
+    const tableId = panning
+      ? undefined
+      : tableTargetAtPoint(scene.tables, diagramPoint(origin))?.tableId;
+    if (panning || (tableId === undefined && event.pointerType === "touch")) {
       activeDrag = {
         ...start,
         kind: "pan",
         start: { x: view.x, y: view.y },
-        clearOnTap: !spacePressed,
+        clearOnTap: !panning,
       };
     } else if (tableId !== undefined) {
       const ids = selectedTableIds.has(tableId) ? selectedTableIds : [tableId];
@@ -536,6 +567,10 @@ export function mountEditor() {
       activeDrag = { ...start, kind: "select", end: origin };
     }
     canvas.setPointerCapture(event.pointerId);
+    if (middleButton) updateDiagramTool();
+  });
+  on(canvas, "auxclick", (event) => {
+    if (event.button === MIDDLE_MOUSE_BUTTON) event.preventDefault();
   });
 
   function moveDrag(drag: CanvasDrag, point: Point) {
@@ -571,6 +606,11 @@ export function mountEditor() {
   on(canvas, "pointermove", (event) => {
     if (activeDrag?.id === event.pointerId) {
       moveDrag(activeDrag, pointer(event));
+      if (
+        activeDrag.middleButton &&
+        (event.buttons & MIDDLE_MOUSE_BUTTON_MASK) === 0
+      )
+        finishDrag();
     } else if (!activeDrag && event.pointerType !== "touch") {
       updateHover(pointer(event));
     }
@@ -594,17 +634,35 @@ export function mountEditor() {
     if (activeDrag?.id === event.pointerId) finishDrag();
   });
   on(document, "keydown", (event) => {
-    if (event.code !== "Space" || event.ctrlKey || event.metaKey || event.altKey)
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.code === "Space") {
+      setSpacePressed(true);
+      if (document.activeElement === canvas) event.preventDefault();
       return;
-    setSpacePressed(true);
-    if (document.activeElement === canvas) event.preventDefault();
+    }
+    const key = event.key.toLowerCase();
+    if ((key !== "v" && key !== "m") || event.isComposing || exportDialog.open)
+      return;
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      (target.isContentEditable || target.closest("input, textarea, select"))
+    )
+      return;
+    setHandTool(key === "m");
+    event.preventDefault();
   });
   on(document, "keyup", (event) => {
     if (event.code === "Space") setSpacePressed(false);
   });
-  window.addEventListener("blur", () => setSpacePressed(false), {
-    signal: listeners.signal,
-  });
+  window.addEventListener(
+    "blur",
+    () => {
+      setSpacePressed(false);
+      if (activeDrag?.middleButton) finishDrag();
+    },
+    { signal: listeners.signal },
+  );
   on(
     canvas,
     "wheel",
@@ -644,6 +702,8 @@ export function mountEditor() {
   on(editor, "scroll", syncScroll);
   for (const button of swatches)
     on(button, "click", () => changeTheme(button.dataset.themeChoice));
+  on(pointerTool, "click", () => setHandTool(false));
+  on(handTool, "click", () => setHandTool(true));
   on(find("zoom-out"), "click", () => zoom(1 / 1.2));
   on(find("zoom-in"), "click", () => zoom(1.2));
   on(find("fit"), "click", () => centerDiagram(true));

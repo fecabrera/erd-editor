@@ -46,7 +46,7 @@ export default function ZoomControls() {
       <Button
         variant="plain"
         id="fit"
-        className="zoom-control rounded-e-[7px] border-l border-ui-line px-[13px] enabled:hover:bg-ui-hover"
+        className="zoom-control rounded-e-[7px] border-l border-ui-line enabled:hover:bg-ui-hover"
         aria-label="Fit diagram"
         title="Fit diagram"
       >
