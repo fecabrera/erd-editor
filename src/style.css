@@ -1,0 +1,180 @@
+@import "tailwindcss" source(none);
+@source "../app";
+@source "./editor-controller.ts";
+
+@theme inline {
+  --font-ui: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-editor: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --text-ui-size: 0.75rem;
+  --color-ui-background: var(--background);
+  --color-ui-surface: var(--surface);
+  --color-ui-subtle: var(--subtle);
+  --color-ui-line: var(--line);
+  --color-ui-ink: var(--ink);
+  --color-ui-muted: var(--muted);
+  --color-ui-button: var(--button);
+  --color-ui-hover: var(--hover);
+  --color-ui-accent: var(--accent);
+  --color-ui-accent-hover: var(--accent-hover);
+  --color-ui-keyboard: var(--keyboard);
+  --color-ui-code: var(--code);
+  --color-ui-keyword: var(--keyword);
+  --color-ui-type: var(--type);
+  --color-ui-string: var(--string);
+  --color-ui-comment: var(--comment);
+  --color-ui-numbers: var(--numbers);
+  --color-ui-error: var(--error);
+  --color-ui-error-bg: var(--error-bg);
+  --color-ui-good: var(--good);
+  --color-ui-canvas: var(--canvas);
+  --color-ui-legend-ink: var(--legend-ink);
+}
+
+:root {
+  color-scheme: light;
+  --workspace-inset: 16px;
+  --editor-width: clamp(17rem, 26vw, 24rem);
+  --editor-height: clamp(9.75rem, 38dvh, 18rem);
+  --floating-control-height: 2.25rem;
+  --background: #edf1f6;
+  --surface: #fff;
+  --subtle: #f6f8fb;
+  --line: #dce3eb;
+  --ink: #172b40;
+  --muted: #53677d;
+  --button: #fff;
+  --hover: #edf3f9;
+  --accent: #27648e;
+  --legend-ink: #27648e;
+  --accent-hover: #205477;
+  --keyboard: #467cab;
+  --code: #344c65;
+  --keyword: #235e9c;
+  --type: #57709a;
+  --string: #427b61;
+  --comment: #647790;
+  --numbers: #6a7d91;
+  --error: #a53035;
+  --error-bg: #fdf0ee;
+  --good: #268062;
+  --canvas: #f3f5f8;
+  --diagram-dot: #d2dce8;
+  --diagram-header: #2f648d;
+  --diagram-card: #fcfdfe;
+  --diagram-border: #dce4eb;
+  --diagram-title: #ffffff;
+  --diagram-field: #26394c;
+  --diagram-type: #536477;
+  --diagram-line: #8593a5;
+  --diagram-highlightLine: #237eab;
+  --diagram-highlightRow: #e5f0fa;
+  --diagram-badge: #eaf0f6;
+  --diagram-badgeInk: #315c7e;
+  --diagram-shadow: rgba(31, 52, 74, 0.17);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #27282e;
+  --surface: #303138;
+  --subtle: #2a2b32;
+  --line: #4c4e57;
+  --ink: #f2f2f4;
+  --muted: #c2c4ce;
+  --button: #383a43;
+  --hover: #43454e;
+  --accent: #3d7197;
+  --legend-ink: #a9cdee;
+  --accent-hover: #4a7fa6;
+  --keyboard: #85b8eb;
+  --code: #d3d9e2;
+  --keyword: #97bff9;
+  --type: #b2b7e4;
+  --string: #acd5bf;
+  --comment: #a1a7b8;
+  --numbers: #aab0bf;
+  --error: #ffc0bf;
+  --error-bg: #4e3037;
+  --good: #8ed6ba;
+  --canvas: #404149;
+  --diagram-dot: #50515a;
+  --diagram-header: #222224;
+  --diagram-card: #35363e;
+  --diagram-border: #4a4b54;
+  --diagram-title: #ffffff;
+  --diagram-field: #eeedf1;
+  --diagram-type: #bdbec9;
+  --diagram-line: #aaaab4;
+  --diagram-highlightLine: #62bee8;
+  --diagram-highlightRow: #494d58;
+  --diagram-badge: #4b4d57;
+  --diagram-badgeInk: #e0e0ec;
+  --diagram-shadow: rgba(0, 0, 0, 0.28);
+}
+
+@layer base {
+  svg.lucide {
+    @apply size-4 shrink-0;
+  }
+
+  button {
+    @apply cursor-pointer disabled:cursor-default disabled:opacity-45;
+  }
+
+  button:focus-visible,
+  canvas:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ui-keyboard;
+  }
+}
+
+@utility app-button {
+  @apply min-h-10 rounded-lg border border-ui-line bg-ui-button px-3.5
+    text-ui-size/[normal] font-[650] whitespace-nowrap text-ui-ink
+    enabled:hover:bg-ui-hover max-[421px]:px-2;
+}
+
+@utility primary-button {
+  @apply inline-flex items-center gap-[7px] border-ui-accent bg-ui-accent
+    text-white enabled:hover:bg-ui-accent-hover;
+}
+
+@utility pane {
+  @apply flex min-h-0 min-w-0 flex-col overflow-hidden border border-ui-line
+    bg-ui-surface shadow-[0_1px_2px_rgba(19,40,62,0.045)];
+}
+
+@utility pane-bar {
+  @apply flex min-h-[var(--floating-control-height)] shrink-0 items-center justify-between gap-2.5
+    border-ui-line px-[15px] py-1.5;
+}
+
+@utility code-text {
+  @apply m-0 font-editor text-ui-size/[1.75] [font-variant-ligatures:none] [tab-size:2];
+}
+
+@utility code-layer {
+  @apply absolute inset-0 h-full w-full border-0 px-[13px] py-3.5 text-left whitespace-pre;
+}
+
+@utility swatch-control {
+  @apply grid h-6 w-7 place-items-center rounded-[6px] bg-transparent p-0
+    text-ui-muted hover:text-ui-ink aria-pressed:inset-ring-1
+    aria-pressed:inset-ring-ui-keyboard;
+}
+
+@utility zoom-control {
+  @apply grid min-h-0 min-w-[35px] place-items-center px-[9px]
+    text-ui-size/[normal] text-ui-ink;
+}
+
+@utility export-choice {
+  @apply flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border
+    border-ui-line bg-ui-button px-2.5 py-[7px] text-ui-size/[normal]
+    has-checked:border-ui-keyboard has-checked:bg-ui-hover
+    has-disabled:cursor-default has-disabled:text-ui-muted has-disabled:opacity-60;
+}
+
+@media (width < 761px) {
+  :root {
+    --workspace-inset: 12px;
+  }
+}

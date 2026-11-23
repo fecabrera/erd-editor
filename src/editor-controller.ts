@@ -1,0 +1,625 @@
+import {
+  parseSchema,
+  layoutSchema,
+  graphBounds,
+  describeError,
+  HEADER,
+} from "./schema";
+import type { Point, PositionedTable, Scene } from "./schema";
+import {
+  drawGraph,
+  drawGrid,
+  fonts,
+  hoverAtPoint,
+  invalidateConnectorPaths,
+  readPalette,
+} from "./draw";
+import type { DiagramHover, Palette } from "./draw";
+import { example } from "./example";
+
+export function mountEditor() {
+  const listeners = new AbortController();
+  function find<T extends HTMLElement = HTMLElement>(id: string): T {
+    const element = document.getElementById(id);
+    if (!element) throw new Error(`Missing editor element: ${id}`);
+    return element as T;
+  }
+
+  function on<K extends keyof HTMLElementEventMap>(
+    target: HTMLElement | Document,
+    type: K,
+    listener: (event: HTMLElementEventMap[K]) => void,
+    options?: AddEventListenerOptions,
+  ) {
+    target.addEventListener(
+      type,
+      (event: Event) => listener(event as HTMLElementEventMap[K]),
+      { ...options, signal: listeners.signal },
+    );
+  }
+
+  const editor = find<HTMLTextAreaElement>("dbml");
+  const editorPane = find("editor-pane");
+  const diagramInfo = find("diagram-info");
+  const diagramNavigation = find("diagram-navigation");
+  const zoomInput = find<HTMLInputElement>("zoom-level");
+  const highlight = find("highlight");
+  const lineNumbers = find("line-numbers");
+  const canvas = find<HTMLCanvasElement>("diagram");
+  const canvasContext = canvas.getContext("2d");
+  if (!canvasContext) return;
+  const context = canvasContext;
+  const workspaceMenu = find("workspace-menu");
+  const menuButton = find("toggle-menu");
+  const menuPanel = find("menu-panel");
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  const swatches = document.querySelectorAll<HTMLButtonElement>(
+    "[data-theme-choice]",
+  );
+  const errorText = find("syntax-error");
+  const exportDialog = find<HTMLDialogElement>("export-dialog");
+  const exportForm = find<HTMLFormElement>("export-form");
+  const openExport = find<HTMLButtonElement>("open-export");
+  const downloadExport = find<HTMLButtonElement>("download-export");
+  const themeBackground = find<HTMLInputElement>("theme-background");
+  const transparentBackground = find<HTMLInputElement>(
+    "transparent-background",
+  );
+  const status = find("schema-status");
+  const frame = { width: 0, height: 0, ratio: 1 };
+  const view = { x: 0, y: 0, scale: 1 };
+  let scene: Scene = { tables: [], links: [], byId: new Map() };
+  let themePreference = normalizeTheme(load("theme"));
+  let palette: Palette;
+  let pngBackground = "theme";
+  let activeDrag:
+    | {
+        id: number;
+        origin: Point;
+        table?: PositionedTable;
+        startX: number;
+        startY: number;
+      }
+    | undefined;
+  let hoverPosition: Point | undefined;
+  let hovered: DiagramHover | undefined;
+  let parseTimer: number | undefined;
+  let toastTimer: number | undefined;
+  let renderFrame: number | undefined;
+
+  function load(key: string) {
+    try {
+      return localStorage.getItem("schema-studio:" + key);
+    } catch {
+      return null;
+    }
+  }
+
+  function save(key: string, value: string) {
+    try {
+      localStorage.setItem("schema-studio:" + key, value);
+    } catch {
+      /* storage is optional */
+    }
+  }
+
+  function normalizeTheme(value: string | null | undefined) {
+    return value === "light" || value === "dark" ? value : "system";
+  }
+
+  function changeTheme(next: string | undefined) {
+    themePreference = normalizeTheme(next);
+    save("theme", themePreference);
+    applyTheme();
+  }
+
+  function applyTheme() {
+    const theme =
+      themePreference === "system"
+        ? systemTheme.matches
+          ? "dark"
+          : "light"
+        : themePreference;
+    document.documentElement.dataset.theme = theme;
+    palette = readPalette(getComputedStyle(document.documentElement));
+    for (const button of swatches)
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.themeChoice === themePreference),
+      );
+    const themeMeta = document.querySelector<HTMLMetaElement>(
+      "meta[name=theme-color]",
+    );
+    if (themeMeta) themeMeta.content = theme === "dark" ? "#303138" : "#ffffff";
+    repaint();
+  }
+
+  function repaint() {
+    if (renderFrame !== undefined) return;
+    renderFrame = requestAnimationFrame(() => {
+      renderFrame = undefined;
+      if (!frame.width || !frame.height) return;
+      context.setTransform(frame.ratio, 0, 0, frame.ratio, 0, 0);
+      drawGrid(context, view, frame.width, frame.height, palette);
+      context.translate(view.x, view.y);
+      context.scale(view.scale, view.scale);
+      hovered =
+        hoverPosition &&
+        hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale);
+      drawGraph(context, scene, palette, hovered);
+      if (document.activeElement !== zoomInput) zoomInput.value = zoomValue();
+    });
+  }
+
+  function resize() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (!width || !height) return;
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    if (
+      width === frame.width &&
+      height === frame.height &&
+      ratio === frame.ratio
+    )
+      return;
+    Object.assign(frame, { width, height, ratio });
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    centerDiagram();
+  }
+
+  function visibleDiagramArea() {
+    const canvasBox = canvas.getBoundingClientRect();
+    const editorBox = editorPane.getBoundingClientRect();
+    const stacked = editorBox.width > frame.width / 2;
+    const left = stacked ? 14 : editorBox.right - canvasBox.left + 16;
+    const right = frame.width - 14;
+    const top = diagramInfo.getBoundingClientRect().bottom - canvasBox.top + 14;
+    const bottom =
+      diagramNavigation.getBoundingClientRect().top - canvasBox.top - 14;
+    return {
+      left,
+      top,
+      width: Math.max(1, right - left),
+      height: Math.max(1, bottom - top),
+    };
+  }
+
+  function centerDiagram(fitToViewport = false) {
+    if (scene.tables.length && frame.width && frame.height) {
+      const bounds = graphBounds(scene, 22);
+      const area = visibleDiagramArea();
+      if (fitToViewport) {
+        view.scale = Math.min(
+          1.14,
+          area.width / bounds.width,
+          area.height / bounds.height,
+        );
+      }
+      view.x =
+        area.left +
+        (area.width - bounds.width * view.scale) / 2 -
+        bounds.x * view.scale;
+      view.y =
+        area.top +
+        (area.height - bounds.height * view.scale) / 2 -
+        bounds.y * view.scale;
+    }
+    repaint();
+  }
+
+  function setZoom(next: number, x?: number, y?: number) {
+    if (x === undefined || y === undefined) {
+      const area = visibleDiagramArea();
+      x = area.left + area.width / 2;
+      y = area.top + area.height / 2;
+    }
+    view.x = x - ((x - view.x) * next) / view.scale;
+    view.y = y - ((y - view.y) * next) / view.scale;
+    view.scale = next;
+    repaint();
+  }
+
+  function zoom(factor: number, x?: number, y?: number) {
+    const next = Math.min(
+      3,
+      Math.max(Math.min(0.02, view.scale), view.scale * factor),
+    );
+    setZoom(next, x, y);
+  }
+
+  function zoomValue() {
+    return String(Math.max(0.1, Math.round(view.scale * 1000) / 10));
+  }
+
+  function commitZoom() {
+    const current = zoomValue();
+    const entry = zoomInput.value.trim();
+    if (entry === current) {
+      zoomInput.value = current;
+      return;
+    }
+
+    const normalized = entry.replace(/\s*%$/, "").replace(",", ".");
+    const percentage = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)
+      ? Number(normalized)
+      : NaN;
+    if (Number.isFinite(percentage) && percentage > 0) {
+      setZoom(Math.min(3, Math.max(0.001, percentage / 100)));
+    } else {
+      notice("Enter a zoom percentage greater than 0.");
+    }
+    zoomInput.value = zoomValue();
+  }
+
+  function syncScroll() {
+    highlight.scrollTop = editor.scrollTop;
+    highlight.scrollLeft = editor.scrollLeft;
+    lineNumbers.scrollTop = editor.scrollTop;
+  }
+
+  function highlightCode() {
+    const source = editor.value;
+    const count = source.split("\n").length;
+    lineNumbers.textContent = Array.from(
+      { length: count },
+      (_, index) => index + 1,
+    ).join("\n");
+    find("line-count").textContent =
+      `${count} ${count === 1 ? "line" : "lines"}`;
+    const fragment = document.createDocumentFragment();
+    const tokenizer =
+      /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|\b(TableGroup|Table|Enum|Project|Ref|Note|indexes|as|pk|not null|unique|default|increment)\b|\b(integer|bigint|varchar|text|boolean|timestamp|date|decimal|numeric|jsonb|uuid)\b/g;
+    let previous = 0;
+    while (true) {
+      const token = tokenizer.exec(source);
+      if (!token) break;
+      fragment.append(source.slice(previous, token.index));
+      const span = document.createElement("span");
+      span.className = token[1]
+        ? "text-ui-comment"
+        : token[2]
+          ? "text-ui-string"
+          : token[3]
+            ? "text-ui-keyword font-[650]"
+            : "text-ui-type";
+      span.textContent = token[0];
+      fragment.append(span);
+      previous = tokenizer.lastIndex;
+    }
+    fragment.append(source.slice(previous) + "\n");
+    highlight.replaceChildren(fragment);
+    syncScroll();
+  }
+
+  function parseEditor() {
+    try {
+      const schema = parseSchema(editor.value);
+      const next = layoutSchema(schema, (text, font) => {
+        context.font = fonts[font];
+        return context.measureText(text).width;
+      });
+      const signature = JSON.stringify(
+        next.tables.map(({ id, fields }) => [id, fields]),
+      );
+      const changed = scene.signature !== signature;
+      if (!changed) {
+        for (const table of next.tables) {
+          const previous = scene.byId.get(table.id);
+          if (previous?.moved)
+            Object.assign(table, { x: previous.x, y: previous.y, moved: true });
+        }
+      }
+      scene = {
+        ...next,
+        signature,
+        byId: new Map(next.tables.map((table) => [table.id, table])),
+      };
+      const tables = scene.tables.length;
+      const links = scene.links.length;
+      errorText.hidden = true;
+      editor.removeAttribute("aria-invalid");
+      editor.removeAttribute("aria-describedby");
+      status.removeAttribute("data-invalid");
+      find("schema-status-text").textContent = tables
+        ? "Valid schema"
+        : "No tables yet";
+      find("diagram-summary").textContent = tables
+        ? `${tables} ${tables === 1 ? "table" : "tables"} · ${links} ${links === 1 ? "relationship" : "relationships"}`
+        : "No tables";
+      canvas.setAttribute(
+        "aria-label",
+        tables
+          ? `Schema diagram with ${tables} tables and ${links} relationships. Use arrow keys to pan and plus or minus to zoom.`
+          : "No tables in the diagram.",
+      );
+      find("empty").hidden = tables > 0;
+      openExport.disabled = downloadExport.disabled = tables === 0;
+      if (changed) centerDiagram();
+      else repaint();
+    } catch (error) {
+      status.setAttribute("data-invalid", "");
+      editor.setAttribute("aria-invalid", "true");
+      editor.setAttribute("aria-describedby", "syntax-error");
+      find("schema-status-text").textContent = "DBML needs attention";
+      errorText.textContent = describeError(error);
+      errorText.hidden = false;
+      find("diagram-summary").textContent = scene.tables.length
+        ? "Last valid diagram"
+        : "No tables";
+      openExport.disabled = downloadExport.disabled = true;
+    }
+  }
+
+  function sourceChanged() {
+    highlightCode();
+    save("source", editor.value);
+    clearTimeout(parseTimer);
+    openExport.disabled = downloadExport.disabled = true;
+    parseTimer = window.setTimeout(parseEditor, 180);
+  }
+
+  function notice(message: string) {
+    const toast = find("toast");
+    clearTimeout(toastTimer);
+    toast.textContent = message;
+    toast.hidden = false;
+    toastTimer = window.setTimeout(() => {
+      toast.hidden = true;
+    }, 3000);
+  }
+
+  function exportDiagram(format: "png" | "jpg", includeBackground: boolean) {
+    if (!scene.tables.length || !errorText.hidden) return;
+    const bounds = graphBounds(scene);
+    const image = document.createElement("canvas");
+    const density = Math.min(
+      2,
+      8192 / Math.max(bounds.width, bounds.height),
+      Math.sqrt(26_000_000 / (bounds.width * bounds.height)),
+    );
+    image.width = Math.max(1, Math.ceil(bounds.width * density));
+    image.height = Math.max(1, Math.ceil(bounds.height * density));
+    const output = image.getContext("2d");
+    if (!output) {
+      notice("Could not export the diagram.");
+      return;
+    }
+    if (format === "jpg" || includeBackground) {
+      output.fillStyle = palette.background;
+      output.fillRect(0, 0, image.width, image.height);
+    }
+    output.setTransform(
+      density,
+      0,
+      0,
+      density,
+      -bounds.x * density,
+      -bounds.y * density,
+    );
+    drawGraph(output, scene, palette);
+    image.toBlob(
+      (blob) => {
+        if (listeners.signal.aborted) return;
+        if (!blob) {
+          notice("Could not export the diagram.");
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const download = document.createElement("a");
+        download.href = url;
+        download.download = `schema-diagram.${format}`;
+        document.body.append(download);
+        download.click();
+        download.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        notice(`${format.toUpperCase()} downloaded`);
+      },
+      format === "jpg" ? "image/jpeg" : "image/png",
+      0.94,
+    );
+  }
+
+  function pointer(event: MouseEvent) {
+    const bounds = canvas.getBoundingClientRect();
+    return { x: event.clientX - bounds.x, y: event.clientY - bounds.y };
+  }
+
+  function diagramPoint({ x, y }: Point) {
+    return { x: (x - view.x) / view.scale, y: (y - view.y) / view.scale };
+  }
+
+  function updateHover(position?: Point) {
+    hoverPosition = position;
+    const target =
+      position &&
+      hoverAtPoint(context, scene, diagramPoint(position), view.scale);
+    if (
+      target?.table?.tableId !== hovered?.table?.tableId ||
+      target?.table?.fieldName !== hovered?.table?.fieldName ||
+      target?.connection !== hovered?.connection
+    ) {
+      repaint();
+    }
+  }
+
+  on(canvas, "pointerdown", (event) => {
+    if (event.button !== 0 || activeDrag) return;
+    const origin = pointer(event);
+    const { x, y } = diagramPoint(origin);
+    updateHover();
+    const table = scene.tables.findLast(
+      (item) =>
+        x >= item.x &&
+        x <= item.x + item.width &&
+        y >= item.y &&
+        y <= item.y + HEADER,
+    );
+    activeDrag = {
+      id: event.pointerId,
+      origin,
+      table,
+      startX: table?.x ?? view.x,
+      startY: table?.y ?? view.y,
+    };
+    canvas.setPointerCapture(event.pointerId);
+    canvas.classList.add("dragging");
+  });
+  on(canvas, "pointermove", (event) => {
+    const position = pointer(event);
+    if (!activeDrag) {
+      if (event.pointerType !== "touch") updateHover(position);
+      return;
+    }
+    if (activeDrag.id !== event.pointerId) return;
+    const dx = position.x - activeDrag.origin.x;
+    const dy = position.y - activeDrag.origin.y;
+    if (activeDrag.table) {
+      activeDrag.table.x = activeDrag.startX + dx / view.scale;
+      activeDrag.table.y = activeDrag.startY + dy / view.scale;
+      activeDrag.table.moved = true;
+      invalidateConnectorPaths(scene);
+    } else {
+      view.x = activeDrag.startX + dx;
+      view.y = activeDrag.startY + dy;
+    }
+    repaint();
+  });
+  on(canvas, "pointerleave", () => updateHover());
+  on(canvas, "lostpointercapture", () => {
+    activeDrag = undefined;
+    canvas.classList.remove("dragging");
+  });
+  on(
+    canvas,
+    "wheel",
+    (event) => {
+      if (!scene.tables.length) return;
+      event.preventDefault();
+      const { x, y } = pointer(event);
+      const amount = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+      zoom(Math.exp(-Math.max(-200, Math.min(200, amount)) * 0.0018), x, y);
+    },
+    { passive: false },
+  );
+  on(canvas, "keydown", (event) => {
+    const directions: Record<string, [number, number] | undefined> = {
+      ArrowUp: [0, 40],
+      ArrowDown: [0, -40],
+      ArrowLeft: [40, 0],
+      ArrowRight: [-40, 0],
+    };
+    const move = directions[event.key];
+    if (move) {
+      view.x += move[0];
+      view.y += move[1];
+      repaint();
+    } else if (event.key === "+" || event.key === "=") zoom(1.2);
+    else if (event.key === "-") zoom(1 / 1.2);
+    else if (event.key === "0") centerDiagram(true);
+    else return;
+    event.preventDefault();
+  });
+
+  editor.value = load("source") ?? example;
+  on(editor, "input", sourceChanged);
+  on(editor, "scroll", syncScroll);
+  for (const button of swatches)
+    on(button, "click", () => changeTheme(button.dataset.themeChoice));
+  on(find("zoom-out"), "click", () => zoom(1 / 1.2));
+  on(find("zoom-in"), "click", () => zoom(1.2));
+  on(find("fit"), "click", () => centerDiagram(true));
+  on(zoomInput, "focus", () => zoomInput.select());
+  on(zoomInput, "blur", commitZoom);
+  on(find("zoom-form"), "submit", (event) => {
+    event.preventDefault();
+    zoomInput.blur();
+  });
+  on(zoomInput, "keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      zoomInput.value = zoomValue();
+      zoomInput.blur();
+    }
+  });
+  function setMenuOpen(open: boolean) {
+    menuButton.setAttribute("aria-expanded", String(open));
+    menuPanel.hidden = !open;
+  }
+
+  on(menuButton, "click", () => setMenuOpen(menuPanel.hidden));
+  on(workspaceMenu, "keydown", (event) => {
+    if (event.key === "Escape" && !menuPanel.hidden) {
+      event.preventDefault();
+      setMenuOpen(false);
+      menuButton.focus();
+    }
+  });
+  on(workspaceMenu, "focusout", (event) => {
+    if (
+      event.relatedTarget instanceof Node &&
+      !workspaceMenu.contains(event.relatedTarget)
+    ) {
+      setMenuOpen(false);
+    }
+  });
+  on(document, "pointerdown", (event) => {
+    if (
+      !menuPanel.hidden &&
+      event.target instanceof Node &&
+      !workspaceMenu.contains(event.target)
+    ) {
+      setMenuOpen(false);
+    }
+  });
+  on(openExport, "click", () => {
+    setMenuOpen(false);
+    exportDialog.showModal();
+  });
+  on(exportDialog, "close", () => menuButton.focus());
+  on(find("cancel-export"), "click", () => exportDialog.close());
+  on(exportForm, "change", (event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+    const { name, value } = event.target;
+    if (name === "format") {
+      const isJpg = value === "jpg";
+      transparentBackground.disabled = isJpg;
+      find("background-hint").hidden = !isJpg;
+      if (isJpg || pngBackground === "theme") themeBackground.checked = true;
+      else transparentBackground.checked = true;
+    } else if (name === "background") {
+      pngBackground = value;
+    }
+  });
+  on(exportForm, "submit", (event) => {
+    event.preventDefault();
+    const options = new FormData(exportForm);
+    exportDialog.close();
+    exportDiagram(
+      options.get("format") === "jpg" ? "jpg" : "png",
+      options.get("background") === "theme",
+    );
+  });
+
+  systemTheme.addEventListener(
+    "change",
+    () => {
+      if (themePreference === "system") applyTheme();
+    },
+    { signal: listeners.signal },
+  );
+  applyTheme();
+  highlightCode();
+  parseEditor();
+  const observer = new ResizeObserver(resize);
+  observer.observe(find("viewport"));
+  resize();
+
+  return () => {
+    listeners.abort();
+    observer.disconnect();
+    clearTimeout(parseTimer);
+    clearTimeout(toastTimer);
+    if (renderFrame !== undefined) cancelAnimationFrame(renderFrame);
+  };
+}
