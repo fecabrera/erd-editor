@@ -2,6 +2,11 @@
 @source "../app";
 @source "./editor-controller.ts";
 
+@theme {
+  --radius-ui: 0.5rem;
+  --radius-ui-edge: calc(var(--radius-ui) - 1px);
+}
+
 @theme inline {
   --font-ui: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-editor: ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -126,7 +131,7 @@
 }
 
 @utility app-button {
-  @apply min-h-10 rounded-lg border border-ui-line bg-ui-button px-3.5
+  @apply min-h-10 rounded-ui border border-ui-line bg-ui-button px-3.5
     text-ui-size/[normal] font-[650] whitespace-nowrap text-ui-ink
     enabled:hover:bg-ui-hover max-[421px]:px-2;
 }
@@ -137,17 +142,17 @@
 }
 
 @utility floating-surface {
-  @apply rounded-lg border border-ui-line bg-ui-surface text-ui-size/[normal]
+  @apply rounded-ui border border-ui-line bg-ui-surface text-ui-size/[normal]
     text-ui-muted shadow-sm;
 }
 
 @utility menu-surface {
-  @apply rounded-xl border border-ui-line bg-ui-surface p-1.5
+  @apply rounded-ui border border-ui-line bg-ui-surface p-1.5
     shadow-[0_8px_24px_rgba(0,0,0,0.16)];
 }
 
 @utility menu-item {
-  @apply flex h-8 w-full items-center gap-2.5 rounded-[7px] px-2.5
+  @apply flex h-8 w-full items-center gap-2.5 rounded-ui px-2.5
     text-start text-ui-size/[normal] font-[650] enabled:hover:bg-ui-hover;
 }
 
@@ -170,7 +175,7 @@
 }
 
 @utility swatch-control {
-  @apply grid h-6 w-7 place-items-center rounded-[6px] bg-transparent p-0
+  @apply grid h-6 w-7 place-items-center rounded-ui bg-transparent p-0
     text-ui-muted hover:text-ui-ink aria-pressed:inset-ring-1
     aria-pressed:inset-ring-ui-keyboard;
 }
@@ -180,7 +185,7 @@
 }
 
 @utility choice-control {
-  @apply flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border
+  @apply flex min-h-8 cursor-pointer items-center gap-2 rounded-ui border
     border-ui-line bg-ui-button px-2.5 py-[7px] text-ui-size/[normal]
     has-checked:border-ui-keyboard has-checked:bg-ui-hover
     has-disabled:cursor-default has-disabled:text-ui-muted has-disabled:opacity-60

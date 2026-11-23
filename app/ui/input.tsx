@@ -11,7 +11,7 @@ export function Input({
       {...props}
       type={type}
       className={cn(
-        "rounded bg-transparent focus-visible:outline-2 focus-visible:outline-ui-keyboard",
+        "rounded-ui bg-transparent focus-visible:outline-2 focus-visible:outline-ui-keyboard",
         className,
       )}
     />

@@ -15,3 +15,8 @@ test("allows callers to replace default Tailwind utilities", () => {
     "text-lg p-4",
   );
 });
+
+test("merges custom UI corner radii with default Tailwind radii", () => {
+  assert.equal(cn("rounded-ui", "rounded-xl"), "rounded-xl");
+  assert.equal(cn("rounded-s-ui-edge", "rounded-s-md"), "rounded-s-md");
+});

@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Group } from "./ui/group";
 
 const toolButtonStyle =
-  "relative grid size-8 place-items-center rounded-[7px] enabled:hover:bg-ui-hover aria-pressed:bg-ui-hover aria-pressed:text-ui-keyboard aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard";
+  "relative grid size-8 place-items-center rounded-ui enabled:hover:bg-ui-hover aria-pressed:bg-ui-hover aria-pressed:text-ui-keyboard aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard";
 
 const shortcutStyle =
   "pointer-events-none absolute right-[3px] bottom-0.5 text-[8px]/none font-semibold";

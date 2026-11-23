@@ -25,9 +25,9 @@ dialog opens above the workspace. [Workspace markup](../../app/editor-workspace.
 - The zoom controls sit at the bottom right on wider screens. Below 761 px,
   they sit 12 px above the editor. The menu opens below its trigger, above
   both the editor and the canvas.
-- The editor card has a 13 px corner radius. Its header shows **Editor** and
-  its footer shows schema status and line count. Syntax diagnostics appear
-  immediately above the footer.
+- The editor card uses the shared 8 px corner radius. Its header shows
+  **Editor** and its footer shows schema status and line count. Syntax
+  diagnostics appear immediately above the footer.
 - The empty preview message is centered in the visible diagram area, to
   the right of the editor or above it on narrow screens.
 

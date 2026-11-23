@@ -13,14 +13,15 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Interface text | `--text-ui-size` at `0.75rem` or 12 px with the default root size. It applies to the summary, legend, editor heading and code, menu, controls, dialogs, and feedback. |
 | Font family | System sans serif with Inter first. The editor and SQL type text use system monospace. |
 | Shared control height | `--floating-control-height` at `2.25rem` or 36 px by default. It applies to the editor header and footer, burger button, summary, and zoom group. |
-| Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, 8 px radius, and small shadow. |
+| Corner radius | Surfaces and controls use `rounded-ui` at 8 px. The end buttons in the zoom group use the `--radius-ui-edge` token, which subtracts the group's 1 px border from the shared radius. |
+| Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, and small shadow. |
 | Diagram toolbar | The buttons are 32 × 32 px, with 4 px of toolbar padding and a 4 px gap. Each button shows its main shortcut in the bottom-right corner. The toolbar is 42 px high, including its border. |
 | Zoom controls | Zoom Out, Zoom In, and Fit share a 35 px button width. |
 | Burger and theme buttons | The burger is square. The light, dark, and system swatches each measure 28 × 24 px by default, with 3 px between swatches. |
 | Icons | Lucide SVGs share a 16 × 16 px default size through the base styling rule. |
-| Buttons | Standard buttons use a 40 px minimum height and an 8 px radius. The export dialog uses 32 px options and footer buttons. The primary action uses the theme accent. |
-| Menu | 32 px rows, 12 px radius, 6 px internal padding, and a 1 px divider with 6 px above and below it. |
-| Export dialog | 14 px radius, themed surface, and a dimmed backdrop. |
+| Buttons | Standard buttons use a 40 px minimum height. The export dialog uses 32 px options and footer buttons. The primary action uses the theme accent. |
+| Menu | 32 px rows, 6 px internal padding, and a 1 px divider with 6 px above and below it. |
+| Export dialog | Themed surface and dimmed backdrop. |
 
 Canvas card lettering and badge sizes are part of the diagram renderer.
 [Canvas rendering specification](../canvas/rendering-and-navigation.md)

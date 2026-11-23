@@ -13,7 +13,7 @@ export default function ZoomControls() {
       <Button
         variant="plain"
         id="zoom-out"
-        className="zoom-control rounded-s-[7px] enabled:hover:bg-ui-hover"
+        className="zoom-control rounded-s-ui-edge enabled:hover:bg-ui-hover"
         aria-label="Zoom out"
         title="Zoom out"
       >
@@ -46,7 +46,7 @@ export default function ZoomControls() {
       <Button
         variant="plain"
         id="fit"
-        className="zoom-control rounded-e-[7px] border-l border-ui-line enabled:hover:bg-ui-hover"
+        className="zoom-control rounded-e-ui-edge border-l border-ui-line enabled:hover:bg-ui-hover"
         aria-label="Fit diagram"
         title="Fit diagram"
       >

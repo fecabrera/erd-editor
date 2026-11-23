@@ -9,7 +9,7 @@ export function Card({ as: Element = "div", className, ...props }: CardProps) {
   return (
     <Element
       {...props}
-      className={cn("pane rounded-[13px]", className)}
+      className={cn("pane rounded-ui", className)}
     />
   );
 }
