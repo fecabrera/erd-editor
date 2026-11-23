@@ -19,14 +19,21 @@ The renderer reads the palette from the active theme. Card colors, shadows,
 borders, and connector colors share the same values in the preview and
 exports. [Canvas palette tokens](../../src/style.css)
 
-## Table, field, and connector hover
+## Table selection and hover
+
+Click or tap a table header or field row to select the table. The selected
+card keeps the same outline used for hover when the pointer moves away.
+Clicking another table selects it instead. Click open canvas or press Escape
+with canvas focus to clear the selection. A schema edit keeps the selection
+if the table still exists under the same name. Selection appears in the
+preview only.
 
 Hovering anywhere on a table outlines the card. Hovering over a field also
 highlights its row, any direct connections, and the rows at the other ends.
 Moving from a row to its header keeps the card outline and clears the row
 and connection highlights. Moving off the table or starting a drag clears
-the outline. Hovering over a connector emphasizes the line and both endpoint
-rows. The pointer can be up to 6 CSS px from its path. Table rows take
+the hover outline. Hovering over a connector emphasizes the line and both
+endpoint rows. The pointer can be up to 6 CSS px from its path. Table rows take
 precedence where a connector runs behind a card. Hover styling is used in the preview only.
 
 ## Zoom and panning
@@ -36,6 +43,8 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
   scale.
 - Drag the background to pan. Drag a table header to move that table.
   Connector paths follow the cards. Pointer capture handles one active drag.
+  Moving the pointer at least 4 CSS px starts a drag without changing the
+  selection.
 - Scroll over a nonempty canvas to zoom around the pointer. Plus and minus
   buttons adjust the current scale by 1.2× or its reciprocal around the
   center of the available area.
@@ -56,4 +65,6 @@ precedence where a connector runs behind a card. Hover styling is used in the pr
   for diagrams larger than the visible area.
 - Dragging a table updates its connectors. Zooming and panning do not change
   schema content.
+- A table remains selected after the pointer leaves it. Dragging a card or
+  panning keeps the current selection.
 - A rejected zoom value leaves the previous view intact.

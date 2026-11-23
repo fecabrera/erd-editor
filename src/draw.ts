@@ -138,7 +138,7 @@ function card(
   table: PositionedTable,
   palette: Palette,
   highlightedFields?: ReadonlySet<string>,
-  hovered = false,
+  outlined = false,
 ) {
   const { x, y, width, height } = table;
   ctx.save();
@@ -201,8 +201,8 @@ function card(
   });
   ctx.restore();
 
-  ctx.strokeStyle = hovered ? palette.highlightLine : palette.border;
-  ctx.lineWidth = hovered ? 1.3 : 0.8;
+  ctx.strokeStyle = outlined ? palette.highlightLine : palette.border;
+  ctx.lineWidth = outlined ? 1.3 : 0.8;
   ctx.beginPath();
   ctx.roundRect(x, y, width, height, 7);
   ctx.stroke();
@@ -274,6 +274,7 @@ export function drawGraph(
   scene: Scene,
   palette: Palette,
   hovered?: DiagramHover,
+  selectedTableId?: string,
 ) {
   const highlight = hovered?.connection
     ? highlightConnections([hovered.connection])
@@ -301,7 +302,7 @@ export function drawGraph(
       table,
       palette,
       highlight?.rows.get(table.id),
-      hovered?.table?.tableId === table.id,
+      hovered?.table?.tableId === table.id || selectedTableId === table.id,
     );
   }
 }

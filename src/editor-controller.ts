@@ -3,6 +3,7 @@ import {
   layoutSchema,
   graphBounds,
   describeError,
+  tableTargetAtPoint,
   HEADER,
 } from "./schema";
 import type { Point, PositionedTable, Scene } from "./schema";
@@ -16,6 +17,8 @@ import {
 } from "./draw";
 import type { DiagramHover, Palette } from "./draw";
 import { example } from "./example";
+
+const DRAG_THRESHOLD = 4;
 
 export function mountEditor() {
   const listeners = new AbortController();
@@ -69,6 +72,7 @@ export function mountEditor() {
   const frame = { width: 0, height: 0, ratio: 1 };
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
+  let selectedTableId: string | undefined;
   let themePreference = normalizeTheme(load("theme"));
   let palette: Palette;
   let pngBackground = "theme";
@@ -79,6 +83,7 @@ export function mountEditor() {
         table?: PositionedTable;
         startX: number;
         startY: number;
+        moved: boolean;
       }
     | undefined;
   let hoverPosition: Point | undefined;
@@ -146,7 +151,7 @@ export function mountEditor() {
       hovered =
         hoverPosition &&
         hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale);
-      drawGraph(context, scene, palette, hovered);
+      drawGraph(context, scene, palette, hovered, selectedTableId);
       if (document.activeElement !== zoomInput) zoomInput.value = zoomValue();
     });
   }
@@ -315,6 +320,8 @@ export function mountEditor() {
         signature,
         byId: new Map(next.tables.map((table) => [table.id, table])),
       };
+      if (selectedTableId !== undefined && !scene.byId.has(selectedTableId))
+        selectedTableId = undefined;
       const tables = scene.tables.length;
       const links = scene.links.length;
       errorText.hidden = true;
@@ -327,12 +334,7 @@ export function mountEditor() {
       find("diagram-summary").textContent = tables
         ? `${tables} ${tables === 1 ? "table" : "tables"} · ${links} ${links === 1 ? "relationship" : "relationships"}`
         : "No tables";
-      canvas.setAttribute(
-        "aria-label",
-        tables
-          ? `Schema diagram with ${tables} tables and ${links} relationships. Use arrow keys to pan and plus or minus to zoom.`
-          : "No tables in the diagram.",
-      );
+      updateCanvasLabel();
       find("empty").hidden = tables > 0;
       openExport.disabled = downloadExport.disabled = tables === 0;
       if (changed) centerDiagram();
@@ -429,6 +431,24 @@ export function mountEditor() {
     return { x: (x - view.x) / view.scale, y: (y - view.y) / view.scale };
   }
 
+  function updateCanvasLabel() {
+    let label = scene.tables.length
+      ? `Schema diagram with ${scene.tables.length} tables and ${scene.links.length} relationships. Use arrow keys to pan and plus or minus to zoom.`
+      : "No tables in the diagram.";
+    const selected =
+      selectedTableId === undefined ? undefined : scene.byId.get(selectedTableId);
+    if (selected)
+      label += ` Selected table: ${selected.name}. Press Escape to clear the selection.`;
+    canvas.setAttribute("aria-label", label);
+  }
+
+  function selectTable(tableId?: string) {
+    if (selectedTableId === tableId) return;
+    selectedTableId = tableId;
+    updateCanvasLabel();
+    repaint();
+  }
+
   function updateHover(position?: Point) {
     hoverPosition = position;
     const target =
@@ -461,6 +481,7 @@ export function mountEditor() {
       table,
       startX: table?.x ?? view.x,
       startY: table?.y ?? view.y,
+      moved: false,
     };
     canvas.setPointerCapture(event.pointerId);
     canvas.classList.add("dragging");
@@ -474,6 +495,8 @@ export function mountEditor() {
     if (activeDrag.id !== event.pointerId) return;
     const dx = position.x - activeDrag.origin.x;
     const dy = position.y - activeDrag.origin.y;
+    if (!activeDrag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+    activeDrag.moved = true;
     if (activeDrag.table) {
       activeDrag.table.x = activeDrag.startX + dx / view.scale;
       activeDrag.table.y = activeDrag.startY + dy / view.scale;
@@ -484,6 +507,14 @@ export function mountEditor() {
       view.y = activeDrag.startY + dy;
     }
     repaint();
+  });
+  on(canvas, "pointerup", (event) => {
+    if (activeDrag?.id !== event.pointerId || activeDrag.moved) return;
+    const position = pointer(event);
+    const { x, y } = activeDrag.origin;
+    if (Math.hypot(position.x - x, position.y - y) >= DRAG_THRESHOLD) return;
+    selectTable(tableTargetAtPoint(scene.tables, diagramPoint(position))?.tableId);
+    if (event.pointerType !== "touch") updateHover(position);
   });
   on(canvas, "pointerleave", () => updateHover());
   on(canvas, "lostpointercapture", () => {
@@ -517,6 +548,7 @@ export function mountEditor() {
     } else if (event.key === "+" || event.key === "=") zoom(1.2);
     else if (event.key === "-") zoom(1 / 1.2);
     else if (event.key === "0") centerDiagram(true);
+    else if (event.key === "Escape" && selectedTableId !== undefined) selectTable();
     else return;
     event.preventDefault();
   });
