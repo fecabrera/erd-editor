@@ -6,10 +6,12 @@ Schema Studio is a browser-local Next.js App Router app written in
 TypeScript. The root route renders a client workspace. Its React effect
 mounts the editor and canvas controller after hydration and cleans up event
 listeners, timers, animation frames, and the resize observer on unmount.
+An inline script in the document head applies the saved theme or system
+appearance before the first paint.
 Schema normalization and layout live in `src/schema.ts`. Canvas 2D
 rendering lives in `src/draw.ts`. Tailwind utilities and theme tokens live
 in `src/style.css` and compile through PostCSS.
-[Root route](../../app/page.tsx) · [Workspace](../../app/editor-workspace.tsx) · [Controller](../../src/editor-controller.ts)
+[Root layout](../../app/layout.tsx) · [Theme setup](../../src/theme.ts) · [Workspace](../../app/editor-workspace.tsx) · [Controller](../../src/editor-controller.ts)
 
 ```mermaid
 flowchart LR

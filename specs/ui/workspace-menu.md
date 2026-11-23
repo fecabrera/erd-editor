@@ -31,5 +31,6 @@ A single floating burger button opens the actions for export and theme.
 
 - Keyboard and pointer users can reach the same menu actions.
 - The divider has equal gaps to the two rows. Both rows are 32 px tall.
+- The first rendered frame uses the saved theme or the system appearance.
 - Theme selection updates the canvas palette and survives a reload where
   browser storage is available.

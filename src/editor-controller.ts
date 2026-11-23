@@ -18,10 +18,12 @@ import {
 } from "./draw";
 import type { DiagramHover, Palette } from "./draw";
 import { example } from "./example";
+import { systemThemeQuery, themeColors, themeStorageKey } from "./theme";
 
 const DRAG_THRESHOLD = 4;
 const MIDDLE_MOUSE_BUTTON = 1;
 const MIDDLE_MOUSE_BUTTON_MASK = 4;
+const sourceStorageKey = "schema-studio:source";
 
 type CanvasDrag = {
   id: number;
@@ -76,7 +78,7 @@ export function mountEditor() {
   const workspaceMenu = find("workspace-menu");
   const menuButton = find("toggle-menu");
   const menuPanel = find("menu-panel");
-  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  const systemTheme = window.matchMedia(systemThemeQuery);
   const swatches = document.querySelectorAll<HTMLButtonElement>(
     "[data-theme-choice]",
   );
@@ -95,7 +97,7 @@ export function mountEditor() {
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
   let selectedTableIds = new Set<string>();
-  let themePreference = normalizeTheme(load("theme"));
+  let themePreference = normalizeTheme(load(themeStorageKey));
   let palette: Palette;
   let pngBackground = "theme";
   let activeDrag: CanvasDrag | undefined;
@@ -109,7 +111,7 @@ export function mountEditor() {
 
   function load(key: string) {
     try {
-      return localStorage.getItem("schema-studio:" + key);
+      return localStorage.getItem(key);
     } catch {
       return null;
     }
@@ -117,19 +119,19 @@ export function mountEditor() {
 
   function save(key: string, value: string) {
     try {
-      localStorage.setItem("schema-studio:" + key, value);
+      localStorage.setItem(key, value);
     } catch {
       /* storage is optional */
     }
   }
 
-  function normalizeTheme(value: string | null | undefined) {
+  function normalizeTheme(value: string | null | undefined): keyof typeof themeColors | "system" {
     return value === "light" || value === "dark" ? value : "system";
   }
 
   function changeTheme(next: string | undefined) {
     themePreference = normalizeTheme(next);
-    save("theme", themePreference);
+    save(themeStorageKey, themePreference);
     applyTheme();
   }
 
@@ -150,7 +152,7 @@ export function mountEditor() {
     const themeMeta = document.querySelector<HTMLMetaElement>(
       "meta[name=theme-color]",
     );
-    if (themeMeta) themeMeta.content = theme === "dark" ? "#303138" : "#ffffff";
+    if (themeMeta) themeMeta.content = themeColors[theme];
     repaint();
   }
 
@@ -388,7 +390,7 @@ export function mountEditor() {
 
   function sourceChanged() {
     highlightCode();
-    save("source", editor.value);
+    save(sourceStorageKey, editor.value);
     clearTimeout(parseTimer);
     openExport.disabled = downloadExport.disabled = true;
     parseTimer = window.setTimeout(parseEditor, 180);
@@ -709,7 +711,7 @@ export function mountEditor() {
     event.preventDefault();
   });
 
-  editor.value = load("source") ?? example;
+  editor.value = load(sourceStorageKey) ?? example;
   on(editor, "input", sourceChanged);
   on(editor, "scroll", syncScroll);
   for (const button of swatches)
