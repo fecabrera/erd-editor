@@ -1,47 +1,45 @@
-import { cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "./cn";
+import { defaultRadius, radiusVariants } from "./radius";
 
-const cardStyles = cva(null, {
-  variants: {
-    part: {
-      root: "pane rounded-lg",
-      header: "pane-bar border-b",
-      content: "min-h-0 flex-1",
-      footer: "pane-bar border-t",
-    },
-  },
-  defaultVariants: { part: "root" },
+const cardStyles = cva("pane", {
+  variants: { radius: radiusVariants },
+  defaultVariants: { radius: defaultRadius },
 });
+
+const cardHeaderStyles = cva("pane-bar border-b");
+const cardContentStyles = cva("min-h-0 flex-1");
+const cardFooterStyles = cva("pane-bar border-t");
 
 type CardProps = ComponentProps<"div"> & {
   as?: "div" | "section" | "article";
-};
+} & VariantProps<typeof cardStyles>;
 
-function CardRoot({ as: Element = "div", className, ...props }: CardProps) {
+function CardRoot({ as: Element = "div", className, radius, ...props }: CardProps) {
   return (
     <Element
       {...props}
-      className={cn(cardStyles(), className)}
+      className={cn(cardStyles({ radius }), className)}
     />
   );
 }
 
 function CardHeader({ className, ...props }: ComponentProps<"header">) {
   return (
-    <header {...props} className={cn(cardStyles({ part: "header" }), className)} />
+    <header {...props} className={cn(cardHeaderStyles(), className)} />
   );
 }
 
 function CardContent({ className, ...props }: ComponentProps<"div">) {
   return (
-    <div {...props} className={cn(cardStyles({ part: "content" }), className)} />
+    <div {...props} className={cn(cardContentStyles(), className)} />
   );
 }
 
 function CardFooter({ className, ...props }: ComponentProps<"footer">) {
   return (
-    <footer {...props} className={cn(cardStyles({ part: "footer" }), className)} />
+    <footer {...props} className={cn(cardFooterStyles(), className)} />
   );
 }
 

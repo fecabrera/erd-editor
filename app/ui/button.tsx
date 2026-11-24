@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "./cn";
+import { defaultRadius, radiusVariants } from "./radius";
 
 const buttonStyles = cva(null, {
   variants: {
@@ -10,20 +11,9 @@ const buttonStyles = cva(null, {
       toggle: "aria-pressed:inset-ring-1 aria-pressed:inset-ring-ui-keyboard",
       plain: null,
     },
-    radius: {
-      sm: "rounded-sm",
-      md: "rounded-md",
-      lg: "rounded-lg",
-    },
+    radius: radiusVariants,
   },
-  compoundVariants: [
-    {
-      variant: ["standard", "primary", "toggle"],
-      radius: undefined,
-      class: "rounded-lg",
-    },
-  ],
-  defaultVariants: { variant: "standard" },
+  defaultVariants: { variant: "standard", radius: defaultRadius },
 });
 
 type ButtonProps = ComponentProps<"button"> & VariantProps<typeof buttonStyles>;

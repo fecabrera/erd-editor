@@ -14,7 +14,7 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Font family | System sans serif with Inter first. The editor and SQL type text use system monospace. |
 | Shared control height | `--floating-control-height` at `2.25rem` or 36 px by default. It applies to the editor header and footer, burger button, summary, and zoom group. |
 | Bar padding | The editor header, editor footer, and diagram info use 12 px of horizontal padding and 6 px of vertical padding. |
-| Corner radius | Shared UI components use Tailwind's default radii. Frames and standalone controls use `rounded-lg` (8 px). Theme swatches and the zoom group's end buttons use `rounded-md` (6 px), while toolbar buttons use `rounded-sm` (4 px). |
+| Corner radius | Shared UI components use Tailwind's default radii. Frames and standalone controls use `rounded-lg` (8 px). Theme swatches use `rounded-md` (6 px), and toolbar buttons use `rounded-sm` (4 px). The zoom group's buttons use `rounded-none` inside their rounded frame. |
 | Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, and small shadow. |
 | Diagram toolbar | The buttons are 32 × 32 px, with 4 px of toolbar padding and a 4 px gap. Each button shows its main shortcut in the bottom-right corner. The toolbar is 42 px high, including its border. |
 | Zoom controls | Zoom Out, Zoom In, and Fit share a 35 px button width. |
@@ -32,6 +32,19 @@ Canvas card lettering and badge sizes are part of the diagram renderer.
 Shared components define base classes, variants, and style defaults with
 Class Variance Authority. The `cn` helper merges Tailwind overrides from
 callers. [CVA variants](https://cva.style/getting-started/variants/)
+
+- **Style ownership.** Give each component its own CVA definition. A
+  component's variants describe that component's visual options. Compound
+  components such as Card and Menu give their subcomponents separate
+  definitions.
+- **API standardization.** Reuse variant names, options, and defaults across
+  related components. Rounded surfaces and controls share the `radius`
+  options `none`, `sm`, `md`, and `lg`, with `lg` as the default. Forward
+  style props to the component that renders them.
+- **Visual composition.** Let the group own its outer frame, controls own
+  their shape and interaction states, and dividers mark the boundaries
+  between sections. Choose the child radius explicitly when it differs
+  from the shared default.
 
 | Component | Usage |
 | --- | --- |

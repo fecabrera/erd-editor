@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "./cn";
+import { defaultRadius, radiusVariants } from "./radius";
 
 const groupStyles = cva(null, {
   variants: {
@@ -8,19 +9,23 @@ const groupStyles = cva(null, {
       row: "flex",
       grid: "grid",
     },
+    radius: radiusVariants,
     variant: {
       plain: null,
-      framed: "rounded-lg border border-ui-line",
-      floating: "floating-surface rounded-lg",
+      framed: "border border-ui-line",
+      floating: "floating-surface",
     },
   },
-  defaultVariants: { layout: "row", variant: "plain" },
+  defaultVariants: { layout: "row", variant: "plain", radius: defaultRadius },
 });
 
 type GroupProps = ComponentProps<"div"> & VariantProps<typeof groupStyles>;
 
-export function Group({ layout, variant, className, ...props }: GroupProps) {
+export function Group({ layout, variant, radius, className, ...props }: GroupProps) {
   return (
-    <div {...props} className={cn(groupStyles({ layout, variant }), className)} />
+    <div
+      {...props}
+      className={cn(groupStyles({ layout, variant, radius }), className)}
+    />
   );
 }
