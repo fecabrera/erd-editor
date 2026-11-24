@@ -8,6 +8,7 @@ import {
   tableTargetAtPoint,
 } from "./schema";
 import type {
+  DiagramSelection,
   TableTarget,
   Point,
   PositionedLink,
@@ -312,10 +313,17 @@ export function drawGraph(
   palette: Palette,
   hovered?: DiagramHover,
   selectedTableIds?: ReadonlySet<string>,
+  selection?: DiagramSelection,
 ) {
-  const highlight = hovered?.connection
-    ? highlightConnections([hovered.connection])
-    : hovered?.table && highlightField(scene.links, hovered.table);
+  const selectedField = selection?.kind === "field" ? selection.field : undefined;
+  let highlight = selection?.kind === "relationship"
+    ? highlightConnections([selection.link])
+    : selectedField && highlightField(scene.links, selectedField);
+  if (hovered?.connection) {
+    highlight = highlightConnections([hovered.connection], highlight?.rows, highlight?.connections);
+  } else if (hovered?.table?.fieldName !== undefined) {
+    highlight = highlightField(scene.links, hovered.table, highlight);
+  }
   ctx.strokeStyle = palette.line;
   ctx.lineWidth = 1.45;
   ctx.lineCap = "round";
@@ -339,7 +347,9 @@ export function drawGraph(
       table,
       palette,
       highlight?.rows.get(table.id),
-      hovered?.table?.tableId === table.id || selectedTableIds?.has(table.id),
+      hovered?.table?.tableId === table.id ||
+        selectedField?.tableId === table.id ||
+        selectedTableIds?.has(table.id),
     );
   }
 }

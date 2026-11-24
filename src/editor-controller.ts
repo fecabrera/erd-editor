@@ -6,7 +6,7 @@ import {
   tableIdsInRectangle,
   tableTargetAtPoint,
 } from "./schema";
-import type { Point, Scene, Schema } from "./schema";
+import type { DiagramSelection, Point, PositionedLink, Scene, Schema, TableTarget } from "./schema";
 import { createDiagramHistory, type TableMoveStart } from "./diagram-history";
 import {
   drawGraph,
@@ -33,16 +33,28 @@ type CanvasDrag = {
   moved: boolean;
   middleButton: boolean;
 } & (
-  | { kind: "select"; end: Point }
+  | { kind: "select"; end: Point; additive: boolean }
   | { kind: "pan"; start: Point; clearOnTap: boolean }
   | {
       kind: "move";
-      tableId: string;
+      target: TableTarget;
       starts: TableMoveStart[];
     }
 );
 
-export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void) {
+export function mountEditor({
+  onTablesChanged,
+  onSelectionChanged,
+  onHoverChanged,
+  onDiagramSelectionChanged,
+  onRevealTables,
+}: {
+  onTablesChanged: (tables: Schema["tables"]) => void;
+  onSelectionChanged: (ids: ReadonlySet<string>) => void;
+  onHoverChanged: (target: DiagramHover | undefined) => void;
+  onDiagramSelectionChanged: (selection: DiagramSelection | undefined) => void;
+  onRevealTables: (ids: string[]) => void;
+}) {
   const listeners = new AbortController();
   function find<T extends HTMLElement = HTMLElement>(id: string): T {
     const element = document.getElementById(id);
@@ -102,6 +114,7 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
   let selectedTableIds = new Set<string>();
+  let diagramSelection: DiagramSelection | undefined;
   let themePreference = normalizeTheme(load(themeStorageKey));
   let palette: Palette;
   let pngBackground = "theme";
@@ -109,6 +122,7 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
   let handToolSelected = false;
   let spacePressed = false;
   let hoverPosition: Point | undefined;
+  let treeHover: TableTarget | undefined;
   let hovered: DiagramHover | undefined;
   let parseTimer: number | undefined;
   let toastTimer: number | undefined;
@@ -170,9 +184,9 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
       drawGrid(context, view, frame.width, frame.height, palette);
       context.translate(view.x, view.y);
       context.scale(view.scale, view.scale);
-      hovered =
-        hoverPosition &&
-        hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale);
+      const nextHover = currentHover();
+      if (hoverChanged(nextHover)) onHoverChanged(nextHover);
+      hovered = nextHover;
       const box =
         activeDrag?.kind === "select" && activeDrag.moved ? activeDrag : undefined;
       drawGraph(
@@ -180,7 +194,8 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
         scene,
         palette,
         hovered,
-        box ? tablesInBox(box) : selectedTableIds,
+        box ? selectionInBox(box) : selectedTableIds,
+        diagramSelection,
       );
       if (box) {
         context.setTransform(frame.ratio, 0, 0, frame.ratio, 0, 0);
@@ -362,8 +377,18 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
         signature,
         byId: new Map(next.tables.map((table) => [table.id, table])),
       };
-      for (const id of selectedTableIds) {
-        if (!scene.byId.has(id)) selectedTableIds.delete(id);
+      if (changed && selectedTableIds.size) {
+        selectTables(new Set([...selectedTableIds].filter((id) => scene.byId.has(id))));
+      }
+      if (treeHover && !hasTarget(treeHover)) treeHover = undefined;
+      if (diagramSelection?.kind === "field" && !hasTarget(diagramSelection.field)) {
+        setDiagramSelection();
+      } else if (diagramSelection?.kind === "relationship") {
+        const key = ({ from, to }: PositionedLink) =>
+          JSON.stringify([[from.id, ...from.names], [to.id, ...to.names]]);
+        const selectedKey = key(diagramSelection.link);
+        const link = scene.links.find((item) => key(item) === selectedKey);
+        setDiagramSelection(link && { kind: "relationship", link });
       }
       const tables = scene.tables.length;
       const links = scene.links.length;
@@ -486,22 +511,72 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
     } else if (selectedTableIds.size > 1) {
       label += ` ${selectedTableIds.size} tables selected.`;
     }
-    if (selectedTableIds.size) label += " Press Escape to clear the selection.";
+    if (diagramSelection?.kind === "field") {
+      const { tableId, fieldName } = diagramSelection.field;
+      label += ` Selected field: ${scene.byId.get(tableId)?.name}.${fieldName}.`;
+    } else if (diagramSelection?.kind === "relationship") {
+      const { from, to } = diagramSelection.link;
+      const endpoint = ({ id, names }: typeof from) => `${scene.byId.get(id)?.name}.${names.join(", ")}`;
+      label += ` Selected relationship: ${endpoint(from)} to ${endpoint(to)}.`;
+    }
+    if (selectedTableIds.size || diagramSelection) label += " Press Escape to clear the selection.";
     canvas.setAttribute("aria-label", label);
   }
 
   function selectTables(ids = new Set<string>()) {
+    if (ids.size === selectedTableIds.size && [...ids].every((id) => selectedTableIds.has(id)))
+      return;
     selectedTableIds = ids;
+    onSelectionChanged(ids);
     updateCanvasLabel();
     repaint();
   }
 
-  function tablesInBox(box: Extract<CanvasDrag, { kind: "select" }>) {
-    return tableIdsInRectangle(
+  function selectTable(id: string, toggle = false) {
+    if (!scene.byId.has(id)) return;
+    const ids = toggle ? new Set(selectedTableIds) : new Set<string>();
+    if (ids.has(id)) ids.delete(id);
+    else ids.add(id);
+    selectTables(ids);
+  }
+
+  function hasTarget({ tableId, fieldName }: TableTarget) {
+    const table = scene.byId.get(tableId);
+    return table !== undefined &&
+      (fieldName === undefined || table.fields.some((field) => field.name === fieldName));
+  }
+
+  function setDiagramSelection(selection?: DiagramSelection) {
+    if (diagramSelection === selection) return;
+    diagramSelection = selection;
+    onDiagramSelectionChanged(selection);
+    updateCanvasLabel();
+    repaint();
+  }
+
+  function selectField(field: Required<TableTarget>) {
+    if (!hasTarget(field)) return;
+    const current = diagramSelection?.kind === "field" ? diagramSelection.field : undefined;
+    if (current?.tableId === field.tableId && current.fieldName === field.fieldName)
+      return;
+    setDiagramSelection({ kind: "field", field });
+  }
+
+  function selectCanvasRelationship(position: Point) {
+    selectTables();
+    const link = hoverAtPoint(context, scene, diagramPoint(position), view.scale)?.connection;
+    if (link) onRevealTables([link.from.id, link.to.id]);
+    if (diagramSelection?.kind === "relationship" && diagramSelection.link === link) return;
+    setDiagramSelection(link && { kind: "relationship", link });
+  }
+
+  function selectionInBox(box: Extract<CanvasDrag, { kind: "select" }>) {
+    const ids = tableIdsInRectangle(
       scene.tables,
       diagramPoint(box.origin),
       diagramPoint(box.end),
     );
+    return box.additive ? new Set([...selectedTableIds, ...ids]) : ids;
   }
 
   function finishDrag() {
@@ -553,18 +628,32 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
     if (active) updateHover();
   }
 
-  function updateHover(position?: Point) {
-    hoverPosition = isHandToolActive() ? undefined : position;
-    const target =
+  function currentHover(): DiagramHover | undefined {
+    if (treeHover) return { table: treeHover };
+    return (
       hoverPosition &&
-      hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale);
-    if (
+      hoverAtPoint(context, scene, diagramPoint(hoverPosition), view.scale)
+    );
+  }
+
+  function hoverChanged(target: DiagramHover | undefined) {
+    return (
       target?.table?.tableId !== hovered?.table?.tableId ||
       target?.table?.fieldName !== hovered?.table?.fieldName ||
       target?.connection !== hovered?.connection
-    ) {
-      repaint();
-    }
+    );
+  }
+
+  function updateHover(position?: Point) {
+    hoverPosition = isHandToolActive() ? undefined : position;
+    if (hoverChanged(currentHover())) repaint();
+  }
+
+  function setTreeHover(target?: TableTarget) {
+    if (!target && !treeHover) return;
+    treeHover = target;
+    if (target) hoverPosition = undefined;
+    repaint();
   }
 
   on(canvas, "pointerdown", (event) => {
@@ -575,17 +664,18 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
     updateHover();
     const start = { id: event.pointerId, origin, moved: false, middleButton };
     const panning = middleButton || isHandToolActive();
-    const tableId = panning
+    const target = panning
       ? undefined
-      : tableTargetAtPoint(scene.tables, diagramPoint(origin))?.tableId;
-    if (panning || (tableId === undefined && event.pointerType === "touch")) {
+      : tableTargetAtPoint(scene.tables, diagramPoint(origin));
+    if (panning || (!target && event.pointerType === "touch")) {
       activeDrag = {
         ...start,
         kind: "pan",
         start: { x: view.x, y: view.y },
         clearOnTap: !panning,
       };
-    } else if (tableId !== undefined) {
+    } else if (target) {
+      const { tableId } = target;
       const ids = selectedTableIds.has(tableId) ? selectedTableIds : [tableId];
       const starts = [];
       for (const id of ids) {
@@ -596,9 +686,9 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
             position: { x: table.x, y: table.y, moved: table.moved },
           });
       }
-      activeDrag = { ...start, kind: "move", tableId, starts };
+      activeDrag = { ...start, kind: "move", target, starts };
     } else {
-      activeDrag = { ...start, kind: "select", end: origin };
+      activeDrag = { ...start, kind: "select", end: origin, additive: event.shiftKey };
     }
     canvas.setPointerCapture(event.pointerId);
     if (middleButton) updateDiagramTool();
@@ -614,8 +704,8 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
       if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
       drag.moved = true;
       canvas.dataset.drag = drag.kind;
-      if (drag.kind === "move" && !selectedTableIds.has(drag.tableId))
-        selectTables(new Set([drag.tableId]));
+      if (drag.kind === "move" && !selectedTableIds.has(drag.target.tableId))
+        selectTable(drag.target.tableId);
     }
     switch (drag.kind) {
       case "select":
@@ -656,10 +746,17 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
     moveDrag(drag, position);
     finishDrag();
     if (drag.kind === "select") {
-      selectTables(drag.moved ? tablesInBox(drag) : undefined);
+      if (drag.moved) selectTables(selectionInBox(drag));
+      else selectCanvasRelationship(position);
     } else if (!drag.moved) {
-      if (drag.kind === "move") selectTables(new Set([drag.tableId]));
-      else if (drag.clearOnTap) selectTables();
+      if (drag.kind === "move") {
+        const { tableId, fieldName } = drag.target;
+        selectTable(tableId, event.shiftKey);
+        if (!event.shiftKey && fieldName !== undefined) {
+          selectField({ tableId, fieldName });
+          onRevealTables([tableId]);
+        }
+      } else if (drag.clearOnTap) selectCanvasRelationship(position);
     }
     if (!drag.moved && event.pointerType !== "touch") updateHover(position);
   });
@@ -703,6 +800,18 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (key === "escape") {
+      if (event.defaultPrevented || event.isComposing || exportDialog.open) return;
+      if (activeDrag?.kind === "select") {
+        finishDrag();
+        event.preventDefault();
+      } else if (!activeDrag && (selectedTableIds.size || diagramSelection)) {
+        selectTables();
+        setDiagramSelection();
+        event.preventDefault();
+      }
+      return;
+    }
     if (event.code === "Space") {
       setSpacePressed(true);
       if (document.activeElement === canvas) event.preventDefault();
@@ -763,9 +872,6 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
     } else if (event.key === "+" || event.key === "=") zoom(1.2);
     else if (event.key === "-") zoom(1 / 1.2);
     else if (event.key === "0") centerDiagram(true);
-    else if (event.key === "Escape" && activeDrag?.kind === "select") finishDrag();
-    else if (event.key === "Escape" && selectedTableIds.size && !activeDrag)
-      selectTables();
     else return;
     event.preventDefault();
   });
@@ -873,11 +979,16 @@ export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void)
   observer.observe(find("viewport"));
   resize();
 
-  return () => {
-    listeners.abort();
-    observer.disconnect();
-    clearTimeout(parseTimer);
-    clearTimeout(toastTimer);
-    if (renderFrame !== undefined) cancelAnimationFrame(renderFrame);
+  return {
+    selectTable,
+    selectField,
+    setTreeHover,
+    dispose() {
+      listeners.abort();
+      observer.disconnect();
+      clearTimeout(parseTimer);
+      clearTimeout(toastTimer);
+      if (renderFrame !== undefined) cancelAnimationFrame(renderFrame);
+    },
   };
 }

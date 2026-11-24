@@ -17,6 +17,28 @@ syntax errors.
 Switching views preserves the draft, the textarea, open tree branches, and
 the diagram view.
 
+Click a table name in Tree view to select the table in both the tree and
+the diagram. Shift-click adds an unselected table or removes a selected table.
+Click the chevron to expand or collapse its field list. The
+tree also highlights tables selected on the canvas, including group
+selections. Escape clears the selection in both views.
+
+Hovering a tree field highlights its row and shows the same diagram
+highlight as hovering that field on its card, including related rows and
+connectors. Hovering a diagram field also highlights its matching tree row.
+Hovering a table name in the tree or its header on the diagram highlights
+the table in both views. Hovering a diagram relationship highlights its
+connected fields in the tree. Collapsed tables stay collapsed.
+
+Click a field row in either view to select it in both. Clicking it on the
+diagram also opens its table in the tree. The tree outline spans the full
+row, and the diagram keeps the field and its relationships
+highlighted after the pointer leaves. Field selection is independent of
+table selection. Escape or clicking open canvas clears it.
+Clicking a diagram relationship selects its endpoint fields and opens both
+tables in the tree. The chevrons can still collapse either table. Clicking
+the relationship again reopens them.
+
 ## Input and highlighting
 
 - A fresh session starts with the built-in five-table, four-relationship

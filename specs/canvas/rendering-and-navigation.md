@@ -26,14 +26,24 @@ select, dragging a selection box, and moving tables. Press **V** to switch
 to Pointer or **M** to switch to Hand. In editable fields, both keys type
 as usual.
 
-Click or tap a table header or field row to select the table. With a mouse
-or pen, drag from open canvas to draw a selection box. The preview outlines
-each table the box touches, and releasing replaces the selection with those
-tables. Selected cards keep the same outline used for hover. Click open
-canvas or press Escape with canvas focus to clear the selection. During
+Click or tap a table header or field row to select the table. Shift-click
+adds an unselected table or removes a selected table. With a mouse or pen, drag from
+open canvas to draw a selection box. The preview outlines each table the
+box touches. A regular drag replaces the selection. Start the drag with
+Shift held to keep the current tables and add those touched by the box.
+Selected cards keep the same outline used for hover. Click open
+canvas or press Escape in the workspace to clear the selection. During
 box selection, Escape cancels the gesture. Schema edits preserve selected
-tables that still exist under the same names. Selection appears in the
-preview only.
+tables that still exist under the same names. The diagram and Tree view
+share the same selection.
+
+A regular click on a field opens its table in the tree, selects the field,
+and keeps its row and direct relationships highlighted on the diagram.
+Hover continues to highlight other fields and relationships alongside the
+selected field.
+Clicking a relationship keeps its connector and endpoint rows highlighted
+and opens both tables in the tree to show those fields selected. Click empty
+canvas or press Escape to clear the selection.
 
 Hovering anywhere on a table outlines the card. Hovering over a field also
 highlights its row, any direct connections, and the rows at the other ends.

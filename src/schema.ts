@@ -74,6 +74,10 @@ export interface TableTarget {
   fieldName?: string;
 }
 
+export type DiagramSelection =
+  | { kind: "field"; field: Required<TableTarget> }
+  | { kind: "relationship"; link: PositionedLink };
+
 export function tableTargetAtPoint(
   tables: PositionedTable[],
   { x, y }: Point,
@@ -115,18 +119,24 @@ export function tableIdsInRectangle(
 export function highlightConnections(
   links: PositionedLink[],
   rows = new Map<string, Set<string>>(),
+  connections = new Set<PositionedLink>(),
 ) {
   for (const link of links) {
+    connections.add(link);
     for (const { id, names } of [link.from, link.to]) {
       const fields = rows.get(id) ?? new Set<string>();
       for (const name of names) fields.add(name);
       rows.set(id, fields);
     }
   }
-  return { rows, connections: new Set(links) };
+  return { rows, connections };
 }
 
-export function highlightField(links: PositionedLink[], target: TableTarget) {
+export function highlightField(
+  links: PositionedLink[],
+  target: TableTarget,
+  highlight?: ReturnType<typeof highlightConnections>,
+) {
   const { tableId, fieldName } = target;
   if (fieldName === undefined) return;
   const directLinks = links.filter((link) =>
@@ -134,10 +144,11 @@ export function highlightField(links: PositionedLink[], target: TableTarget) {
       ({ id, names }) => id === tableId && names.includes(fieldName),
     ),
   );
-  return highlightConnections(
-    directLinks,
-    new Map([[tableId, new Set([fieldName])]]),
-  );
+  const rows = highlight?.rows ?? new Map<string, Set<string>>();
+  const fields = rows.get(tableId) ?? new Set<string>();
+  fields.add(fieldName);
+  rows.set(tableId, fields);
+  return highlightConnections(directLinks, rows, highlight?.connections);
 }
 
 type Diagnostic = {

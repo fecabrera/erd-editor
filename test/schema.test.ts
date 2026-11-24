@@ -263,6 +263,20 @@ test("highlights direct connections and their endpoint fields only", () => {
   );
 });
 
+test("preserves selected rows and connections when adding hover highlights", () => {
+  const { links } = layoutSchema(parseSchema(example), (text) => text.length * 8);
+  const selected = highlightField(links, { tableId: "public.customers", fieldName: "id" });
+  const combined = highlightField(links, { tableId: "public.customers", fieldName: "email" }, selected);
+  assert.ok(combined);
+  assert.deepEqual(combined.rows.get("public.customers"), new Set(["id", "email"]));
+  const additionalLink = links.find((link) => link.from.id === "public.categories");
+  assert.ok(additionalLink);
+  const both = highlightConnections([additionalLink], combined.rows, combined.connections);
+  assert.deepEqual(both.rows.get("public.customers"), new Set(["id", "email"]));
+  assert.deepEqual(both.rows.get("public.categories"), new Set(["id"]));
+  assert.equal(both.connections.size, 2);
+});
+
 test("highlights only the endpoint fields of the hovered connection", () => {
   const { links } = layoutSchema(
     parseSchema(example),

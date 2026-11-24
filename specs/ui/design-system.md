@@ -57,7 +57,7 @@ callers. [CVA variants](https://cva.style/getting-started/variants/)
 | `Dropdown` | Renders a trigger and a panel linked by ID. The panel is inline by default. Use `placement="below-start"` to place it beneath a positioned container. The caller owns open state, dismissal, and focus behavior. |
 | `Menu` | Provides the themed panel, with `MenuItem` for action buttons and `MenuSeparator` for visual dividers. Give a menu item a `shortcut` with a key and optional Shift modifier. It renders `MenuItem.Shortcut` with Command or Ctrl for the platform and sets `aria-keyshortcuts`. The action owner handles the keyboard event. |
 | `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. `Card.Header` and `Card.Footer` provide shared spacing and dividers. `Card.Content` fills the available space and lets the caller set the inner layout. |
-| `Tree` | Displays a hierarchy as lists with native expandable branches. Use `Tree.Branch` with a `label`, `Tree.Group` for its indented child list, and `Tree.Item` for leaf rows. Groups can contain further branches. |
+| `Tree` | Displays a hierarchy as lists with expandable branches. Use `Tree.Branch` with a `label`, `Tree.Group` for its indented child list, and `Tree.Item` for leaf rows. Supply `onSelect`, `selected`, and an accessible `toggleLabel` to give a branch separate selection and disclosure buttons. Groups can contain further branches. |
 | `Toast` | Displays a status message at the bottom of the viewport. The caller supplies the message and controls visibility and dismissal timing. |
 
 [Component source](../../app/ui/)

@@ -1,4 +1,5 @@
-import type { Schema } from "../src/schema";
+import type { DiagramHover } from "../src/draw";
+import type { DiagramSelection, Schema, TableTarget } from "../src/schema";
 import SchemaTree from "./schema-tree";
 import { Card } from "./ui/card";
 
@@ -7,9 +8,25 @@ export type SourceView = "tree" | "dbml";
 export default function EditorPane({
   view,
   tables,
+  selectedTableIds,
+  openTableIds,
+  onTableOpenChange,
+  diagramSelection,
+  onFieldSelect,
+  hovered,
+  onTableSelect,
+  onTreeHover,
 }: {
   view: SourceView;
   tables: Schema["tables"];
+  selectedTableIds: ReadonlySet<string>;
+  openTableIds: ReadonlySet<string>;
+  onTableOpenChange: (id: string, open: boolean) => void;
+  diagramSelection?: DiagramSelection;
+  onFieldSelect: (field: Required<TableTarget>) => void;
+  hovered?: DiagramHover;
+  onTableSelect: (id: string, toggle: boolean) => void;
+  onTreeHover: (target?: TableTarget) => void;
 }) {
   const showTree = view === "tree";
   return (
@@ -54,7 +71,18 @@ export default function EditorPane({
           ></textarea>
         </div>
       </Card.Content>
-      <SchemaTree tables={tables} hidden={!showTree} />
+      <SchemaTree
+        tables={tables}
+        hidden={!showTree}
+        selectedTableIds={selectedTableIds}
+        openTableIds={openTableIds}
+        onTableOpenChange={onTableOpenChange}
+        diagramSelection={diagramSelection}
+        onFieldSelect={onFieldSelect}
+        hovered={hovered}
+        onTableSelect={onTableSelect}
+        onTreeHover={onTreeHover}
+      />
       <p
         id="syntax-error"
         className="syntax-error max-h-[110px] overflow-auto border-t border-ui-line bg-ui-error-bg px-[15px] py-2.5 text-ui-size/[normal] text-ui-error"
