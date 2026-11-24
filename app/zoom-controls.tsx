@@ -8,7 +8,7 @@ export default function ZoomControls() {
     <Group
       id="diagram-navigation"
       variant="floating"
-      className="navigation absolute right-[var(--workspace-inset)] bottom-[var(--workspace-inset)] h-[var(--floating-control-height)] max-[761px]:bottom-[calc(var(--editor-height)+var(--workspace-inset)+12px)] items-stretch"
+      className="navigation absolute right-[var(--workspace-inset)] bottom-[var(--diagram-navigation-bottom)] h-[var(--floating-control-height)] items-stretch"
       aria-label="Diagram view controls"
     >
       <Button

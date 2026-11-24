@@ -5,6 +5,7 @@ import Database from "../node_modules/@dbml/core/lib/model_structure/database.mj
 import dagre from "@dagrejs/dagre";
 import type { ColumnType } from "@dbml/core";
 import { compactPath, routeAround, segmentClear } from "./connector-routing";
+import { getKeyBadges, keyBadgeGap, keyBadgeGroupGap, keyBadgePadding } from "./key-badges";
 
 export interface Point {
   x: number;
@@ -19,8 +20,10 @@ interface Field {
   name: string;
   type: string;
   primary: boolean;
+  notNull: boolean;
   required: boolean;
   foreign: boolean;
+  unique: boolean;
 }
 
 interface Table {
@@ -41,7 +44,7 @@ interface SchemaLink {
   to: Endpoint;
 }
 
-interface Schema {
+export interface Schema {
   tables: Table[];
   links: SchemaLink[];
 }
@@ -164,16 +167,26 @@ export function parseSchema(source: string): Schema {
             index.columns.map(({ value }) => value as string),
           ),
       );
+      const unique = new Set(
+        table.indexes.flatMap(({ unique, columns }) =>
+          unique && columns.length === 1 && columns[0].type === "column"
+            ? [columns[0].value]
+            : [],
+        ),
+      );
       const fields = table.fields.map((field): Field => {
         // DBML Core's model includes parameters and schema qualification in type_name.
         const { type_name: type }: ColumnType = field.type;
         const isPrimary = Boolean(field.pk || primary.has(field.name));
+        const notNull = Boolean(field.not_null);
         return {
           name: field.name,
           type,
           primary: isPrimary,
-          required: Boolean(field.not_null || isPrimary),
+          notNull,
+          required: notNull || isPrimary,
           foreign: false,
+          unique: Boolean(field.unique || unique.has(field.name)),
         };
       });
       return { id, name, fields };
@@ -237,7 +250,10 @@ export function describeError(error: unknown) {
 
 export function layoutSchema(
   schema: Schema,
-  measure: (text: string, font: "title" | "field" | "type") => number,
+  measure: (
+    text: string,
+    font: "title" | "field" | "primary" | "type" | "badge",
+  ) => number,
 ): Layout {
   const graph = new dagre.graphlib.Graph({ multigraph: true });
   graph.setGraph({
@@ -253,10 +269,24 @@ export function layoutSchema(
       Math.max(
         208,
         measure(table.name, "title") + 60,
-        ...table.fields.map(
-          (field) =>
-            measure(field.name, "field") + measure(field.type, "type") + 76,
-        ),
+        ...table.fields.map((field) => {
+          const badges = getKeyBadges(field);
+          const leftCount = badges.filter(({ side }) => side === "left").length;
+          const rightCount = badges.length - leftCount;
+          const badgesWidth = badges.reduce(
+            (width, { label }) => width + measure(label, "badge") + 2 * keyBadgePadding,
+            0,
+          );
+          const leftGaps = leftCount ? keyBadgeGroupGap + (leftCount - 1) * keyBadgeGap : 0;
+          const rightGaps = rightCount ? keyBadgeGroupGap + (rightCount - 1) * keyBadgeGap : 0;
+          // Two 14 px insets and at least 12 px between the name and type groups.
+          const spacing = Math.max(76, 40 + badgesWidth + leftGaps + rightGaps);
+          return (
+            measure(field.name, field.primary ? "primary" : "field") +
+            measure(field.type, "type") +
+            spacing
+          );
+        }),
       ),
     );
     const height = HEADER + table.fields.length * ROW;

@@ -27,7 +27,6 @@
   --color-ui-error-bg: var(--error-bg);
   --color-ui-good: var(--good);
   --color-ui-canvas: var(--canvas);
-  --color-ui-legend-ink: var(--legend-ink);
 }
 
 :root {
@@ -36,6 +35,8 @@
   --editor-width: clamp(17rem, 26vw, 24rem);
   --editor-height: clamp(9.75rem, 38dvh, 18rem);
   --floating-control-height: 2.25rem;
+  --diagram-navigation-bottom: var(--workspace-inset);
+  --diagram-info-bottom: var(--diagram-navigation-bottom);
   --background: #edf1f6;
   --surface: #fff;
   --subtle: #f6f8fb;
@@ -45,7 +46,6 @@
   --button: #fff;
   --hover: #edf3f9;
   --accent: #27648e;
-  --legend-ink: #27648e;
   --accent-hover: #205477;
   --keyboard: #467cab;
   --code: #344c65;
@@ -83,7 +83,6 @@
   --button: #383a43;
   --hover: #43454e;
   --accent: #3d7197;
-  --legend-ink: #a9cdee;
   --accent-hover: #4a7fa6;
   --keyboard: #85b8eb;
   --code: #d3d9e2;
@@ -185,8 +184,16 @@
     [&>input]:flex-none [&>input]:accent-ui-keyboard;
 }
 
+@media (width < 1280px) {
+  :root {
+    --diagram-info-bottom: calc(var(--diagram-navigation-bottom) + var(--floating-control-height) + 8px);
+  }
+}
+
 @media (width < 761px) {
   :root {
     --workspace-inset: 12px;
+    --diagram-info-bottom: calc(var(--editor-height) + var(--workspace-inset) + 12px);
+    --diagram-navigation-bottom: calc(var(--diagram-info-bottom) + var(--floating-control-height) + 8px);
   }
 }

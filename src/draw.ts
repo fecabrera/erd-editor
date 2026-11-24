@@ -1,3 +1,4 @@
+import { getKeyBadges, keyBadgeGap, keyBadgeGroupGap, keyBadgePadding } from "./key-badges";
 import {
   HEADER,
   ROW,
@@ -194,29 +195,30 @@ function card(
     ctx.fillStyle = palette.field;
     ctx.font = field.primary ? fonts.primary : fonts.field;
     ctx.fillText(field.name, x + 14, center);
-    const badge =
-      field.primary && field.foreign
-        ? "PK · FK"
-        : field.primary
-          ? "PK"
-          : field.foreign
-            ? "FK"
-            : "";
-    if (badge) {
-      const badgeX = x + 14 + ctx.measureText(field.name).width + 8;
+    const leftBadges = getKeyBadges(field, "left");
+    if (leftBadges.length) {
+      let badgeX = x + 14 + ctx.measureText(field.name).width + keyBadgeGroupGap;
       ctx.font = fonts.badge;
-      const badgeWidth = ctx.measureText(badge).width + 8;
-      ctx.fillStyle = palette.badge;
-      ctx.beginPath();
-      ctx.roundRect(badgeX, center - 7, badgeWidth, 14, 3);
-      ctx.fill();
-      ctx.fillStyle = palette.badgeInk;
-      ctx.fillText(badge, badgeX + 4, center + 0.3);
+      for (const { label } of leftBadges) {
+        const badgeWidth = ctx.measureText(label).width + 2 * keyBadgePadding;
+        drawFieldBadge(ctx, palette, label, badgeX, center, badgeWidth);
+        badgeX += badgeWidth + keyBadgeGap;
+      }
+    }
+    const rightBadges = getKeyBadges(field, "right");
+    let typeRight = x + width - 14;
+    ctx.font = fonts.badge;
+    for (let index = rightBadges.length - 1; index >= 0; index--) {
+      const { label } = rightBadges[index];
+      const badgeWidth = ctx.measureText(label).width + 2 * keyBadgePadding;
+      const badgeX = typeRight - badgeWidth;
+      drawFieldBadge(ctx, palette, label, badgeX, center, badgeWidth);
+      typeRight = badgeX - (index === 0 ? keyBadgeGroupGap : keyBadgeGap);
     }
     ctx.textAlign = "right";
     ctx.fillStyle = palette.type;
     ctx.font = fonts.type;
-    ctx.fillText(field.type, x + width - 14, center);
+    ctx.fillText(field.type, typeRight, center);
   });
   ctx.restore();
 
@@ -225,6 +227,22 @@ function card(
   ctx.beginPath();
   ctx.roundRect(x, y, width, height, 7);
   ctx.stroke();
+}
+
+function drawFieldBadge(
+  ctx: CanvasRenderingContext2D,
+  palette: Palette,
+  label: string,
+  x: number,
+  center: number,
+  width: number,
+) {
+  ctx.fillStyle = palette.badge;
+  ctx.beginPath();
+  ctx.roundRect(x, center - 7, width, 14, 3);
+  ctx.fill();
+  ctx.fillStyle = palette.badgeInk;
+  ctx.fillText(label, x + keyBadgePadding, center + 0.3);
 }
 
 const connectorPaths = new WeakMap<

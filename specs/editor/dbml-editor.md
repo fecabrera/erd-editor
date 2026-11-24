@@ -5,6 +5,18 @@
 The editor accepts DBML through a native, multiline textarea. Typing and
 pasting update the preview and editor state locally. [Editor markup](../../app/editor-workspace.tsx) · [Editor logic](../../src/editor-controller.ts)
 
+## Source views
+
+DBML is the default view. Choose Tree in the diagram toolbar to browse
+tables and expand each one to see its field names, data types, and
+nullability. As on the diagram, PK and FK sit beside the field name, and UQ
+and NN sit to the right of the type. Only fields explicitly marked
+`not null` show **NN**. The tree
+updates after a successful parse and keeps the last valid schema during
+syntax errors.
+Switching views preserves the draft, the textarea, open tree branches, and
+the diagram view.
+
 ## Input and highlighting
 
 - A fresh session starts with the built-in five-table, four-relationship

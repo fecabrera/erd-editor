@@ -1,8 +1,11 @@
+import type { ComponentProps } from "react";
 import DiagramInfo from "./diagram-info";
 import DiagramToolbar from "./diagram-toolbar";
 import ZoomControls from "./zoom-controls";
 
-export default function DiagramPreview() {
+export default function DiagramPreview(
+  props: ComponentProps<typeof DiagramToolbar>,
+) {
   return (
     <section
       className="preview absolute inset-0"
@@ -11,7 +14,7 @@ export default function DiagramPreview() {
       <h2 id="preview-heading" className="sr-only">
         Diagram preview
       </h2>
-      <DiagramToolbar />
+      <DiagramToolbar {...props} />
       <div
         id="viewport"
         className="viewport absolute inset-0 overflow-hidden bg-ui-canvas"
@@ -25,7 +28,7 @@ export default function DiagramPreview() {
         ></canvas>
         <div
           id="empty"
-          className="empty pointer-events-none absolute inset-y-0 right-0 left-[calc(var(--editor-width)+var(--workspace-inset))] flex flex-col max-[761px]:bottom-[calc(var(--editor-height)+var(--workspace-inset)+48px)] max-[761px]:left-0 items-center justify-center gap-[7px] text-ui-size/[normal] text-ui-muted"
+          className="empty pointer-events-none absolute top-0 right-0 bottom-[calc(max(var(--diagram-info-bottom),var(--diagram-navigation-bottom))+var(--floating-control-height))] left-[calc(var(--editor-width)+var(--workspace-inset))] flex flex-col max-[761px]:left-0 items-center justify-center gap-[7px] text-ui-size/[normal] text-ui-muted"
           hidden
         >
           <strong className="text-ui-size/[normal] text-ui-ink">

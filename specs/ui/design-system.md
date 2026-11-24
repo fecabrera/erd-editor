@@ -16,7 +16,7 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Bar padding | The editor header, editor footer, and diagram info use 12 px of horizontal padding and 6 px of vertical padding. |
 | Corner radius | Shared UI components use Tailwind's default radii. Frames and standalone controls use `rounded-lg` (8 px). Theme swatches use `rounded-md` (6 px), and toolbar buttons use `rounded-sm` (4 px). The zoom group's buttons use `rounded-none` inside their rounded frame. |
 | Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, and small shadow. |
-| Diagram toolbar | The buttons are 32 × 32 px, with 5 px of toolbar padding and a 5 px gap. A 1 px divider separates Undo and Redo from Pointer and Hand. The tool buttons show their shortcuts in the bottom-right corner. The toolbar is 44 px high, including its border. |
+| Diagram toolbar | The buttons are 32 × 32 px, with 5 px of toolbar padding and a 5 px gap. Dividers separate Undo and Redo, Pointer and Hand, and the Tree and DBML views. Pointer and Hand show their shortcuts in the bottom-right corner. The toolbar is 44 px high, including its border. |
 | Zoom controls | Zoom Out, Zoom In, and Fit share a 35 px button width. |
 | Burger and theme buttons | The burger is square. The light, dark, and system swatches each measure 28 × 24 px by default, with 3 px between swatches. The group has a shared 1 px border and 2 px of padding. |
 | Icons | Lucide SVGs share a 16 × 16 px default size through the base styling rule. |
@@ -24,6 +24,7 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Menu | 32 px rows, 6 px internal padding, and a 1 px divider with 6 px above and below it. |
 | Export dialog | Themed surface and dimmed backdrop. |
 
+The diagram legend and table tree match the key badges on diagram cards.
 Canvas card lettering and badge sizes are part of the diagram renderer.
 [Canvas rendering specification](../canvas/rendering-and-navigation.md)
 
@@ -56,6 +57,7 @@ callers. [CVA variants](https://cva.style/getting-started/variants/)
 | `Dropdown` | Renders a trigger and a panel linked by ID. The panel is inline by default. Use `placement="below-start"` to place it beneath a positioned container. The caller owns open state, dismissal, and focus behavior. |
 | `Menu` | Provides the themed panel, with `MenuItem` for action buttons and `MenuSeparator` for visual dividers. Give a menu item a `shortcut` with a key and optional Shift modifier. It renders `MenuItem.Shortcut` with Command or Ctrl for the platform and sets `aria-keyshortcuts`. The action owner handles the keyboard event. |
 | `Card` | Provides a themed surface for content. Use an `article` or labeled `section` when the content calls for one. `Card.Header` and `Card.Footer` provide shared spacing and dividers. `Card.Content` fills the available space and lets the caller set the inner layout. |
+| `Tree` | Displays a hierarchy as lists with native expandable branches. Use `Tree.Branch` with a `label`, `Tree.Group` for its indented child list, and `Tree.Item` for leaf rows. Groups can contain further branches. |
 | `Toast` | Displays a status message at the bottom of the viewport. The caller supplies the message and controls visibility and dismissal timing. |
 
 [Component source](../../app/ui/)
@@ -77,8 +79,8 @@ callers. [CVA variants](https://cva.style/getting-started/variants/)
 | Error text / background | `#a53035` / `#fdf0ee` | `#ffc0bf` / `#4e3037` |
 | Canvas | `#f3f5f8` | `#404149` |
 
-The stylesheet also defines syntax colors, line-number color, canvas drawing
-colors, and theme-specific legend text. The displayed sizes in px assume a
+The stylesheet also defines syntax colors, line-number color, and canvas drawing
+colors. The displayed sizes in px assume a
 16 px root font size. [Complete token definitions](../../src/style.css)
 
 ## Interaction and acceptance criteria

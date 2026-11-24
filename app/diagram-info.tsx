@@ -1,3 +1,4 @@
+import KeyBadge from "./key-badge";
 import { Group } from "./ui/group";
 
 export default function DiagramInfo() {
@@ -5,18 +6,24 @@ export default function DiagramInfo() {
     <Group
       id="diagram-info"
       variant="floating"
-      className="pointer-events-none absolute top-[var(--workspace-inset)] right-[var(--workspace-inset)] h-[var(--floating-control-height)] items-center gap-3 px-3 py-1.5"
+      className="pointer-events-none absolute bottom-[var(--diagram-info-bottom)] left-1/2 h-[var(--floating-control-height)] -translate-x-1/2 items-center gap-3 px-3 py-1.5 whitespace-nowrap min-[761px]:max-[1280px]:left-[calc(50%+(var(--editor-width)+var(--workspace-inset))/2)]"
     >
       <p id="diagram-summary">No tables</p>
       <div
-        className="legend flex border-l border-ui-line pl-3 max-[761px]:hidden items-center gap-3.5 [&_span]:flex [&_span]:items-center [&_span]:gap-1.5 [&_b]:rounded-sm [&_b]:bg-ui-hover [&_b]:px-1 [&_b]:py-[3px] [&_b]:font-mono [&_b]:text-ui-size/[normal] [&_b]:text-ui-legend-ink"
+        className="legend flex items-center gap-3.5 border-l border-ui-line pl-3 max-[761px]:hidden [&>span]:flex [&>span]:items-center [&>span]:gap-1.5"
         aria-label="Diagram legend"
       >
         <span>
-          <b className="pk">PK</b> Primary key
+          <KeyBadge primary /> <span className="max-[900px]:sr-only">Primary key</span>
         </span>
         <span>
-          <b className="fk">FK</b> Foreign key
+          <KeyBadge foreign /> <span className="max-[900px]:sr-only">Foreign key</span>
+        </span>
+        <span>
+          <KeyBadge unique /> <span className="max-[900px]:sr-only">Unique</span>
+        </span>
+        <span>
+          <KeyBadge notNull /> <span className="max-[900px]:sr-only">Not null</span>
         </span>
       </div>
     </Group>

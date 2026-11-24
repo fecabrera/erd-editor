@@ -16,19 +16,22 @@ dialog opens above the workspace. [Workspace markup](../../app/editor-workspace.
 - Below 761 px, the editor floats across the bottom with 12 px side and bottom
   insets. Its height is `clamp(9.75rem, 38dvh, 18rem)`. The editor text scrolls
   within the card.
-- The burger button sits at the top left and the diagram summary sits at the
-  top right. Both use the same top inset. The summary shows table and
-  relationship counts and a PK/FK legend. Below 761 px, it shows the count
-  without the legend.
-- The diagram toolbar sits at the top center. Undo and Redo sit to the left
-  of the divider, followed by Pointer and Hand. At 1040 px and below, the
-  toolbar moves to the row beneath the burger and summary.
+- The burger button sits at the top left. The diagram summary shows table
+  and relationship counts and a PK/FK/UQ/NN legend at the bottom center.
+  From 761 px to below 1280 px, it sits above the zoom controls and centers
+  in the canvas area beside the editor. Below 900 px the legend shows badge
+  abbreviations. On phones below 761 px, only the counts appear, centered
+  12 px above the editor.
+- The diagram toolbar sits at the top center. Undo and Redo come first,
+  followed by Pointer and Hand, then Tree and DBML. A divider separates
+  each pair. Below 360 px, the toolbar moves to the row beneath the burger.
 - The zoom controls sit at the bottom right on wider screens. Below 761 px,
-  they sit 12 px above the editor. The menu opens below its trigger, above
+  they sit above the summary. The menu opens below its trigger, above
   both the editor and the canvas.
 - The editor card uses the shared 8 px corner radius. Its header shows
-  **Editor** and its footer shows schema status and line count. Syntax
-  diagnostics appear immediately above the footer.
+  **Editor** in DBML view or **Tables** in Tree view. The footer shows
+  schema status and includes the line count in DBML view. Syntax diagnostics
+  appear immediately above the footer.
 - The empty preview message is centered in the visible diagram area, to
   the right of the editor or above it on narrow screens.
 

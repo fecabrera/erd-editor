@@ -60,6 +60,70 @@ test("uses the second endpoint as the foreign key for one-to-one references", ()
   assert.equal(tables[0].fields[0].foreign, false);
 });
 
+test("marks inline and single-column uniqueness without marking composite members", () => {
+  const schema = parseSchema(`
+    Table accounts {
+      id int [pk]
+      email varchar [unique]
+      handle varchar
+      region varchar
+      code varchar
+
+      indexes {
+        handle [unique]
+        (region, code) [unique]
+      }
+    }
+  `);
+
+  assert.deepEqual(
+    schema.tables[0].fields.filter((field) => field.unique).map((field) => field.name),
+    ["email", "handle"],
+  );
+  assert.equal(schema.tables[0].fields[1].required, false);
+});
+
+test("leaves room for all badges on a field and its type", () => {
+  const fieldName = "account_identifier_with_a_long_name";
+  const schema = parseSchema(`
+    Table accounts {
+      id int [pk]
+    }
+    Table profiles {
+      ${fieldName} int [pk, unique, not null, ref: > accounts.id]
+    }
+  `);
+  const typeWidth = 3 * 8;
+  const nameWidth = fieldName.length * 9;
+  const badgesWidth = 4 * (2 * 6 + 8) + 2 * 4;
+  const { tables } = layoutSchema(schema, (text, font) => {
+    if (font === "primary") return text.length * 9;
+    if (font === "badge") return text.length * 6;
+    return text.length * 8;
+  });
+  assert.equal(tables[1].width, 14 + nameWidth + 8 + badgesWidth + 12 + typeWidth + 8 + 14);
+});
+
+test("distinguishes explicit not null from required primary keys", () => {
+  const { tables } = parseSchema(`
+    Table accounts {
+      id int [pk]
+      name text [not null]
+      bio text [null]
+      email text
+    }
+  `);
+  assert.deepEqual(
+    tables[0].fields.map(({ name, notNull, required }) => [name, notNull, required]),
+    [
+      ["id", false, true],
+      ["name", true, true],
+      ["bio", false, false],
+      ["email", false, false],
+    ],
+  );
+});
+
 test("routes a self relation outside the card and includes it in export bounds", () => {
   const schema = parseSchema(`
     Table folders {

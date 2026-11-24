@@ -12,7 +12,7 @@ connectors, then table cards. [Canvas renderer](../../src/draw.ts) · [Viewport 
 | Grid | Theme background and 1.2 px dots. At 100% zoom, dots are 20 px apart. The grid adapts at low zoom and follows panning. |
 | Table cards | Rounded 7 px corners, a subtle shadow and border, and a colored header. Light headers are blue `#2f648d`. Dark headers are charcoal `#222224`. |
 | Fields | Left-aligned names and right-aligned type labels, with thin row dividers. Table titles are 16 px bold. Field names are 14.5 px, with bold primary keys. Types use 12.5 px monospace. |
-| Key badges | PK, FK, or PK · FK in 9 px bold monospace beside the field name. |
+| Field badges | PK and FK sit beside the field name. UQ and NN sit to the right of the type. Each group uses a 4 px gap between badges and 9 px bold monospace. NN marks an explicit `not null` setting. |
 | Connectors | Thin paths with rounded turns. Ticks mark one, crow's feet mark many, and circles mark optional ends. |
 
 The renderer reads the palette from the active theme. Card colors, shadows,

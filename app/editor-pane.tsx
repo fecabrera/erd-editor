@@ -1,6 +1,17 @@
+import type { Schema } from "../src/schema";
+import SchemaTree from "./schema-tree";
 import { Card } from "./ui/card";
 
-export default function EditorPane() {
+export type SourceView = "tree" | "dbml";
+
+export default function EditorPane({
+  view,
+  tables,
+}: {
+  view: SourceView;
+  tables: Schema["tables"];
+}) {
+  const showTree = view === "tree";
   return (
     <Card
       as="section"
@@ -13,10 +24,14 @@ export default function EditorPane() {
           id="source-heading"
           className="text-ui-size/[1.4] font-bold tracking-[-0.018em]"
         >
-          Editor
+          {showTree ? "Tables" : "Editor"}
         </h2>
       </Card.Header>
-      <Card.Content className="editor relative flex bg-ui-subtle focus-within:inset-ring-1 focus-within:inset-ring-ui-keyboard">
+      <Card.Content
+        id="dbml-editor"
+        className="editor relative flex bg-ui-subtle focus-within:inset-ring-1 focus-within:inset-ring-ui-keyboard"
+        hidden={showTree}
+      >
         <pre
           id="line-numbers"
           className="code-text w-[43px] flex-none overflow-hidden border-r border-ui-line py-3.5 pr-2 pl-0.5 text-right text-ui-numbers select-none"
@@ -39,6 +54,7 @@ export default function EditorPane() {
           ></textarea>
         </div>
       </Card.Content>
+      <SchemaTree tables={tables} hidden={!showTree} />
       <p
         id="syntax-error"
         className="syntax-error max-h-[110px] overflow-auto border-t border-ui-line bg-ui-error-bg px-[15px] py-2.5 text-ui-size/[normal] text-ui-error"
@@ -53,7 +69,7 @@ export default function EditorPane() {
           <span className="status-dot size-[7px] shrink-0 rounded-full bg-ui-good group-data-[invalid]:bg-ui-error"></span>
           <span id="schema-status-text">Loading schema</span>
         </span>
-        <span id="line-count">0 lines</span>
+        <span id="line-count" hidden={showTree}>0 lines</span>
       </Card.Footer>
     </Card>
   );

@@ -6,7 +6,7 @@ import {
   tableIdsInRectangle,
   tableTargetAtPoint,
 } from "./schema";
-import type { Point, Scene } from "./schema";
+import type { Point, Scene, Schema } from "./schema";
 import { createDiagramHistory, type TableMoveStart } from "./diagram-history";
 import {
   drawGraph,
@@ -42,7 +42,7 @@ type CanvasDrag = {
     }
 );
 
-export function mountEditor() {
+export function mountEditor(onTablesChanged: (tables: Schema["tables"]) => void) {
   const listeners = new AbortController();
   function find<T extends HTMLElement = HTMLElement>(id: string): T {
     const element = document.getElementById(id);
@@ -213,13 +213,12 @@ export function mountEditor() {
     const stacked = editorBox.width > frame.width / 2;
     const left = stacked ? 14 : editorBox.right - canvasBox.left + 16;
     const right = frame.width - 14;
-    const top =
-      Math.max(
-        diagramInfo.getBoundingClientRect().bottom,
-        diagramToolbar.getBoundingClientRect().bottom,
-      ) - canvasBox.top + 14;
+    const top = diagramToolbar.getBoundingClientRect().bottom - canvasBox.top + 14;
     const bottom =
-      diagramNavigation.getBoundingClientRect().top - canvasBox.top - 14;
+      Math.min(
+        diagramInfo.getBoundingClientRect().top,
+        diagramNavigation.getBoundingClientRect().top,
+      ) - canvasBox.top - 14;
     return {
       left,
       top,
@@ -381,8 +380,10 @@ export function mountEditor() {
       updateCanvasLabel();
       find("empty").hidden = tables > 0;
       openExport.disabled = downloadExport.disabled = tables === 0;
-      if (changed) centerDiagram();
-      else repaint();
+      if (changed) {
+        onTablesChanged(schema.tables);
+        centerDiagram();
+      } else repaint();
     } catch (error) {
       status.setAttribute("data-invalid", "");
       editor.setAttribute("aria-invalid", "true");

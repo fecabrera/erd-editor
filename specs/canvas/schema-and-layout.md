@@ -11,8 +11,13 @@ computes initial table positions. [Parser and layout implementation](../../src/s
 - Each table has a stable key formed from its schema and name. The default
   `public` schema is omitted from the displayed name. Other schemas remain
   qualified.
-- Each field has a name, formatted type, and primary, required, and foreign
-  flags. Primary keys include column flags and primary indexes.
+- Each field has a name, formatted type, and primary, required, foreign, and
+  unique flags. Primary keys include column flags and primary indexes.
+  Field badges use the explicit `not null` flag. The required flag covers
+  both primary keys and explicit `not null` settings.
+  Column-level uniqueness comes from an inline `unique` setting or a
+  single-column unique index. Composite indexes constrain the combination
+  of columns.
 - References resolve to table and column IDs. Inline and stand-alone
   references feed the same relationship model. A one-to-one reference
   treats its second DBML endpoint as the foreign key.

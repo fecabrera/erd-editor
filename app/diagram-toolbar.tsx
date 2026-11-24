@@ -1,4 +1,5 @@
-import { Hand, MousePointer2, Redo2, Undo2 } from "lucide-react";
+import { CodeXml, Hand, ListTree, MousePointer2, Redo2, Undo2 } from "lucide-react";
+import type { SourceView } from "./editor-pane";
 import { Button } from "./ui/button";
 import { Group } from "./ui/group";
 
@@ -8,13 +9,19 @@ const toolButtonStyle =
 const shortcutStyle =
   "pointer-events-none absolute right-[3px] bottom-0.5 text-[8px]/none font-semibold";
 
-export default function DiagramToolbar() {
+export default function DiagramToolbar({
+  sourceView,
+  onSourceViewChange,
+}: {
+  sourceView: SourceView;
+  onSourceViewChange: (view: SourceView) => void;
+}) {
   return (
     <Group
       id="diagram-toolbar"
       variant="floating"
       radius="xl"
-      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1.25 p-1.25 max-[1040px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
+      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1.25 p-1.25 max-[360px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
       role="group"
       aria-label="Diagram tools"
     >
@@ -66,6 +73,29 @@ export default function DiagramToolbar() {
         <kbd className={shortcutStyle} aria-hidden="true">
           M
         </kbd>
+      </Button>
+      <div className="w-px shrink-0 self-stretch bg-ui-line" aria-hidden="true" />
+      <Button
+        variant="toggle"
+        className={toolButtonStyle}
+        aria-label="Tree view"
+        aria-pressed={sourceView === "tree"}
+        aria-controls="schema-tree"
+        title="Tree view"
+        onClick={() => onSourceViewChange("tree")}
+      >
+        <ListTree aria-hidden="true" />
+      </Button>
+      <Button
+        variant="toggle"
+        className={toolButtonStyle}
+        aria-label="DBML editor"
+        aria-pressed={sourceView === "dbml"}
+        aria-controls="dbml-editor"
+        title="DBML editor"
+        onClick={() => onSourceViewChange("dbml")}
+      >
+        <CodeXml aria-hidden="true" />
       </Button>
     </Group>
   );
