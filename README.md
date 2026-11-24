@@ -17,8 +17,13 @@ Schema Studio is a browser-based editor for database diagrams. Paste DBML to see
 ## Screenshots
 
 <p>
-  <img src="docs/screenshots/light-mode.png" alt="Schema Studio in light mode with the DBML editor and a five-table diagram" width="48%">&nbsp;&nbsp;
-  <img src="docs/screenshots/dark-mode.png" alt="Schema Studio in dark mode with the DBML editor and a five-table diagram" width="48%">
+  <img src="docs/screenshots/dbml-light-mode.png" alt="Schema Studio in light mode with the DBML editor and a five-table diagram" width="48%">&nbsp;&nbsp;
+  <img src="docs/screenshots/dbml-dark-mode.png" alt="Schema Studio in dark mode with the DBML editor and a five-table diagram" width="48%">
+</p>
+
+<p>
+  <img src="docs/screenshots/tree-light-mode.png" alt="Schema Studio in light mode with the tree view and a five-table diagram" width="48%">&nbsp;&nbsp;
+  <img src="docs/screenshots/tree-dark-mode.png" alt="Schema Studio in dark mode with the tree view and a five-table diagram" width="48%">
 </p>
 
 ## Features
