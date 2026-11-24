@@ -6,7 +6,8 @@ import {
   tableIdsInRectangle,
   tableTargetAtPoint,
 } from "./schema";
-import type { Point, PositionedTable, Scene } from "./schema";
+import type { Point, Scene } from "./schema";
+import { createDiagramHistory, type TableMoveStart } from "./diagram-history";
 import {
   drawGraph,
   drawGrid,
@@ -37,7 +38,7 @@ type CanvasDrag = {
   | {
       kind: "move";
       tableId: string;
-      starts: { table: PositionedTable; position: Point }[];
+      starts: TableMoveStart[];
     }
 );
 
@@ -66,6 +67,8 @@ export function mountEditor() {
   const editorPane = find("editor-pane");
   const diagramInfo = find("diagram-info");
   const diagramToolbar = find("diagram-toolbar");
+  const undoButton = find<HTMLButtonElement>("diagram-undo");
+  const redoButton = find<HTMLButtonElement>("diagram-redo");
   const pointerTool = find<HTMLButtonElement>("diagram-tool-pointer");
   const handTool = find<HTMLButtonElement>("diagram-tool-hand");
   const diagramNavigation = find("diagram-navigation");
@@ -94,6 +97,7 @@ export function mountEditor() {
   );
   const status = find("schema-status");
   const isMac = isMacPlatform();
+  const diagramHistory = createDiagramHistory();
   const frame = { width: 0, height: 0, ratio: 1 };
   const view = { x: 0, y: 0, scale: 1 };
   let scene: Scene = { tables: [], links: [], byId: new Map() };
@@ -343,6 +347,10 @@ export function mountEditor() {
       );
       const changed = scene.signature !== signature;
       if (changed || activeDrag?.kind === "move") finishDrag();
+      if (changed) {
+        diagramHistory.clear();
+        updateHistoryControls();
+      }
       if (!changed) {
         for (const table of next.tables) {
           const previous = scene.byId.get(table.id);
@@ -497,12 +505,29 @@ export function mountEditor() {
 
   function finishDrag() {
     if (!activeDrag) return;
-    const { id, middleButton } = activeDrag;
+    const drag = activeDrag;
     activeDrag = undefined;
-    if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+    if (canvas.hasPointerCapture(drag.id)) canvas.releasePointerCapture(drag.id);
     delete canvas.dataset.drag;
-    if (middleButton) updateDiagramTool();
+    if (drag.middleButton) updateDiagramTool();
+    if (drag.kind === "move" && drag.moved) {
+      diagramHistory.record(drag.starts);
+      updateHistoryControls();
+    }
     repaint();
+  }
+
+  function updateHistoryControls() {
+    undoButton.disabled = !diagramHistory.canUndo;
+    redoButton.disabled = !diagramHistory.canRedo;
+  }
+
+  function changeHistory(action: "undo" | "redo") {
+    if (activeDrag || !diagramHistory[action](scene.byId)) return false;
+    invalidateConnectorPaths(scene);
+    updateHistoryControls();
+    repaint();
+    return true;
   }
 
   function setSpacePressed(pressed: boolean) {
@@ -564,7 +589,11 @@ export function mountEditor() {
       const starts = [];
       for (const id of ids) {
         const table = scene.byId.get(id);
-        if (table) starts.push({ table, position: { x: table.x, y: table.y } });
+        if (table)
+          starts.push({
+            table,
+            position: { x: table.x, y: table.y, moved: table.moved },
+          });
       }
       activeDrag = { ...start, kind: "move", tableId, starts };
     } else {
@@ -639,13 +668,13 @@ export function mountEditor() {
   });
   on(document, "keydown", (event) => {
     const key = event.key.toLowerCase();
-    const exportModifier = isMac
+    const primaryModifier = isMac
       ? event.metaKey && !event.ctrlKey
       : event.ctrlKey && !event.metaKey;
     if (
       key === exportImageShortcut.key.toLowerCase() &&
       event.shiftKey === exportImageShortcut.shift &&
-      exportModifier &&
+      primaryModifier &&
       !event.altKey
     ) {
       if (
@@ -656,6 +685,22 @@ export function mountEditor() {
       openExport.click();
       return;
     }
+    const target = event.target;
+    const editing =
+      target instanceof HTMLElement &&
+      (target.isContentEditable || target.closest("input, textarea, select"));
+    if (
+      primaryModifier &&
+      !event.altKey &&
+      !event.isComposing &&
+      !exportDialog.open &&
+      !editing &&
+      key === "z"
+    ) {
+      if (changeHistory(event.shiftKey ? "redo" : "undo"))
+        event.preventDefault();
+      return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.code === "Space") {
       setSpacePressed(true);
@@ -664,12 +709,7 @@ export function mountEditor() {
     }
     if ((key !== "v" && key !== "m") || event.isComposing || exportDialog.open)
       return;
-    const target = event.target;
-    if (
-      target instanceof HTMLElement &&
-      (target.isContentEditable || target.closest("input, textarea, select"))
-    )
-      return;
+    if (editing) return;
     setHandTool(key === "m");
     event.preventDefault();
   });
@@ -734,6 +774,13 @@ export function mountEditor() {
   on(editor, "scroll", syncScroll);
   for (const button of swatches)
     on(button, "click", () => changeTheme(button.dataset.themeChoice));
+  undoButton.setAttribute("aria-keyshortcuts", isMac ? "Meta+Z" : "Control+Z");
+  redoButton.setAttribute(
+    "aria-keyshortcuts",
+    isMac ? "Shift+Meta+Z" : "Shift+Control+Z",
+  );
+  on(undoButton, "click", () => changeHistory("undo"));
+  on(redoButton, "click", () => changeHistory("redo"));
   on(pointerTool, "click", () => setHandTool(false));
   on(handTool, "click", () => setHandTool(true));
   on(find("zoom-out"), "click", () => zoom(1 / 1.2));

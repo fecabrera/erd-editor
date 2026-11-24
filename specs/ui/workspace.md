@@ -20,8 +20,9 @@ dialog opens above the workspace. [Workspace markup](../../app/editor-workspace.
   top right. Both use the same top inset. The summary shows table and
   relationship counts and a PK/FK legend. Below 761 px, it shows the count
   without the legend.
-- The diagram toolbar sits at the top center with Pointer and Hand buttons.
-  At 940 px and below, it moves to the row beneath the burger and summary.
+- The diagram toolbar sits at the top center. Undo and Redo sit to the left
+  of the divider, followed by Pointer and Hand. At 1040 px and below, the
+  toolbar moves to the row beneath the burger and summary.
 - The zoom controls sit at the bottom right on wider screens. Below 761 px,
   they sit 12 px above the editor. The menu opens below its trigger, above
   both the editor and the canvas.

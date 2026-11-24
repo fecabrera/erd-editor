@@ -1,4 +1,4 @@
-import { Hand, MousePointer2 } from "lucide-react";
+import { Hand, MousePointer2, Redo2, Undo2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Group } from "./ui/group";
 
@@ -14,10 +14,31 @@ export default function DiagramToolbar() {
       id="diagram-toolbar"
       variant="floating"
       radius="xl"
-      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1.25 p-1.25 max-[940px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
+      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1.25 p-1.25 max-[1040px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
       role="group"
       aria-label="Diagram tools"
     >
+      <Button
+        variant="plain"
+        id="diagram-undo"
+        className={toolButtonStyle}
+        aria-label="Undo"
+        title="Undo"
+        disabled
+      >
+        <Undo2 aria-hidden="true" />
+      </Button>
+      <Button
+        variant="plain"
+        id="diagram-redo"
+        className={toolButtonStyle}
+        aria-label="Redo"
+        title="Redo"
+        disabled
+      >
+        <Redo2 aria-hidden="true" />
+      </Button>
+      <div className="w-px shrink-0 self-stretch bg-ui-line" aria-hidden="true" />
       <Button
         variant="toggle"
         id="diagram-tool-pointer"

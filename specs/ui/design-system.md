@@ -16,7 +16,7 @@ canvas and image renderer. [Tailwind source](../../src/style.css)
 | Bar padding | The editor header, editor footer, and diagram info use 12 px of horizontal padding and 6 px of vertical padding. |
 | Corner radius | Shared UI components use Tailwind's default radii. Frames and standalone controls use `rounded-lg` (8 px). Theme swatches use `rounded-md` (6 px), and toolbar buttons use `rounded-sm` (4 px). The zoom group's buttons use `rounded-none` inside their rounded frame. |
 | Floating surfaces | The burger button, diagram info, and zoom group share the theme surface, border, secondary foreground color, and small shadow. |
-| Diagram toolbar | The buttons are 32 × 32 px, with 4 px of toolbar padding and a 4 px gap. Each button shows its main shortcut in the bottom-right corner. The toolbar is 42 px high, including its border. |
+| Diagram toolbar | The buttons are 32 × 32 px, with 5 px of toolbar padding and a 5 px gap. A 1 px divider separates Undo and Redo from Pointer and Hand. The tool buttons show their shortcuts in the bottom-right corner. The toolbar is 44 px high, including its border. |
 | Zoom controls | Zoom Out, Zoom In, and Fit share a 35 px button width. |
 | Burger and theme buttons | The burger is square. The light, dark, and system swatches each measure 28 × 24 px by default, with 3 px between swatches. The group has a shared 1 px border and 2 px of padding. |
 | Icons | Lucide SVGs share a 16 × 16 px default size through the base styling rule. |

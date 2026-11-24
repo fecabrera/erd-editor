@@ -43,6 +43,18 @@ the hover outline. Hovering over a connector emphasizes the line and both
 endpoint rows. The pointer can be up to 6 CSS px from its path. Table rows take
 precedence where a connector runs behind a card. Hover styling is used in the preview only.
 
+## Layout history
+
+- The diagram toolbar has **Undo** and **Redo** to the left of **Pointer**
+  and **Hand**, with a divider between the two sets of controls.
+- Moving a table or selected group records one history step. Undo and Redo
+  restore table positions and redraw connectors. A new move discards
+  later redo steps. A schema edit that rebuilds the table layout clears
+  the history.
+- Use **Command+Z** and **Shift+Command+Z** on macOS, or **Ctrl+Z** and
+  **Shift+Ctrl+Z** on other platforms. Editable fields keep native undo
+  and redo.
+
 ## Zoom and panning
 
 - Start at 100% on a fresh load and center the diagram in the available

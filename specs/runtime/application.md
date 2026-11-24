@@ -32,8 +32,8 @@ flowchart LR
   `schema-studio:theme`. The draft saves on input. The preference saves on
   theme selection. When storage is unavailable, the app still works for
   the current page session.
-- Zoom, table positions, open menus, and export options live in memory
-  and reset on reload.
+- Zoom, table positions, layout history, open menus, and export options
+  live in memory and reset on reload.
 - No app server or database connection is used. Source parsing and image
   generation happen in the browser. The diagram is rendered as canvas
   pixels. Assistive technology receives counts and control labels, while
