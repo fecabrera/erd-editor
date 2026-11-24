@@ -13,13 +13,13 @@ export default function DiagramToolbar() {
     <Group
       id="diagram-toolbar"
       variant="floating"
-      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1 p-1 max-[940px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
+      radius="xl"
+      className="absolute top-[var(--workspace-inset)] left-1/2 z-[1] -translate-x-1/2 gap-1.25 p-1.25 max-[940px]:top-[calc(var(--workspace-inset)+var(--floating-control-height)+8px)]"
       role="group"
       aria-label="Diagram tools"
     >
       <Button
         variant="toggle"
-        radius="sm"
         id="diagram-tool-pointer"
         className={toolButtonStyle}
         aria-label="Pointer"
@@ -34,7 +34,6 @@ export default function DiagramToolbar() {
       </Button>
       <Button
         variant="toggle"
-        radius="sm"
         id="diagram-tool-hand"
         className={toolButtonStyle}
         aria-label="Hand"
